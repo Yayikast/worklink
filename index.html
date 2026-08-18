@@ -46,22 +46,31 @@ function Avatar({ name, size = "w-10 h-10 text-sm" }) {
   );
 }
 
+const CURRENT_USER = {
+  name: "You",
+  program: "Digital Business, Year 2",
+  rating: 4.8,
+  reviews: 6,
+};
+
 const INITIAL_SERVICES = [
-  { id: "s1", type: "service", name: "Ploy Suwannarat", title: "Python Debugging & Homework Help", category: "Coding", description: "I can help you debug Python assignments, fix errors, and explain concepts clearly. 2nd year DSI student.", price: "150 THB/hr", rating: 4.9, reviews: 21 },
-  { id: "s2", type: "service", name: "Nut Chaiyaporn", title: "Figma UI/UX Design", category: "Design", description: "Clean, modern Figma designs for posters, apps, and presentations. Fast turnaround, portfolio available.", price: "300 THB/project", rating: 5.0, reviews: 14 },
-  { id: "s3", type: "service", name: "Fah Kittipong", title: "English Proofreading & Editing", category: "Writing", description: "Native-level English editing for essays, reports, and presentations. Grammar, tone, and clarity fixes.", price: "80 THB/page", rating: 4.8, reviews: 33 },
-  { id: "s4", type: "service", name: "Beam Anurak", title: "Calculus & Linear Algebra Tutoring", category: "Tutoring", description: "1-on-1 tutoring sessions for ICT math courses. I explain step by step until it clicks.", price: "200 THB/hr", rating: 4.9, reviews: 18 },
-  { id: "s5", type: "service", name: "Ice Napassorn", title: "Event & Portrait Photography", category: "Photography", description: "I shoot campus events, portraits, and product photos. Includes basic editing and same-week delivery.", price: "500 THB/session", rating: 5.0, reviews: 9 },
-  { id: "s6", type: "service", name: "Bank Thanapat", title: "Excel & Data Analysis Help", category: "Excel/Data", description: "Formulas, pivot tables, dashboards, and cleaning messy datasets for your reports and thesis work.", price: "120 THB/hr", rating: 4.7, reviews: 12 },
+  { id: "s1", type: "service", name: "Ploy Suwannarat", title: "Python Debugging & Homework Help", category: "Coding", description: "I can help you debug Python assignments, fix errors, and explain concepts clearly. 2nd year DSI student.", price: "150 THB/hr", rating: 4.9, reviews: 21, status: "Active" },
+  { id: "s2", type: "service", name: "Nut Chaiyaporn", title: "Figma UI/UX Design", category: "Design", description: "Clean, modern Figma designs for posters, apps, and presentations. Fast turnaround, portfolio available.", price: "300 THB/project", rating: 5.0, reviews: 14, status: "Active" },
+  { id: "s3", type: "service", name: "Fah Kittipong", title: "English Proofreading & Editing", category: "Writing", description: "Native-level English editing for essays, reports, and presentations. Grammar, tone, and clarity fixes.", price: "80 THB/page", rating: 4.8, reviews: 33, status: "Active" },
+  { id: "s4", type: "service", name: "Beam Anurak", title: "Calculus & Linear Algebra Tutoring", category: "Tutoring", description: "1-on-1 tutoring sessions for ICT math courses. I explain step by step until it clicks.", price: "200 THB/hr", rating: 4.9, reviews: 18, status: "Active" },
+  { id: "s5", type: "service", name: "Ice Napassorn", title: "Event & Portrait Photography", category: "Photography", description: "I shoot campus events, portraits, and product photos. Includes basic editing and same-week delivery.", price: "500 THB/session", rating: 5.0, reviews: 9, status: "Active" },
+  { id: "s6", type: "service", name: "Bank Thanapat", title: "Excel & Data Analysis Help", category: "Excel/Data", description: "Formulas, pivot tables, dashboards, and cleaning messy datasets for your reports and thesis work.", price: "120 THB/hr", rating: 4.7, reviews: 12, status: "Active" },
+  { id: "s7", type: "service", name: "You", title: "Canva & Social Media Graphics", category: "Design", description: "I design Instagram posts, banners, and simple branding assets for club events and projects.", price: "100 THB/design", rating: 5.0, reviews: 3, status: "Active" },
 ];
 
 const INITIAL_REQUESTS = [
-  { id: "r1", type: "request", name: "Gap Sirinya", title: "Need help debugging a Python script", category: "Coding", description: "My sorting algorithm assignment keeps throwing an IndexError and I can't figure out why. Need it fixed before Friday.", budget: "100 THB", deadline: "Aug 21, 2026" },
-  { id: "r2", type: "request", name: "Two Ratchanon", title: "Looking for someone to design a poster", category: "Design", description: "Need an A2 poster for our club's open house event. Have the content ready, just need it designed nicely.", budget: "250 THB", deadline: "Aug 25, 2026" },
-  { id: "r3", type: "request", name: "Mind Pattarapon", title: "Need an English presentation proofread", category: "Writing", description: "10-slide presentation for my capstone review. Just need grammar and phrasing checked before Monday.", budget: "150 THB", deadline: "Aug 24, 2026" },
-  { id: "r4", type: "request", name: "Aim Warisara", title: "Need a tutor for Statistics midterm", category: "Tutoring", description: "Struggling with hypothesis testing and regression. Looking for 2 sessions before the exam.", budget: "350 THB", deadline: "Aug 28, 2026" },
-  { id: "r5", type: "request", name: "Job Kittisak", title: "Need product photos for a small shop", category: "Photography", description: "About 15 products to shoot with a plain background, need them by next week.", budget: "400 THB", deadline: "Aug 27, 2026" },
-  { id: "r6", type: "request", name: "Fern Chayapa", title: "Need help building an Excel dashboard", category: "Excel/Data", description: "Have raw survey data and need it turned into charts and a summary dashboard for a group project.", budget: "200 THB", deadline: "Aug 23, 2026" },
+  { id: "r1", type: "request", name: "Gap Sirinya", title: "Need help debugging a Python script", category: "Coding", description: "My sorting algorithm assignment keeps throwing an IndexError and I can't figure out why. Need it fixed before Friday.", budget: "100 THB", deadline: "Aug 21, 2026", status: "Open" },
+  { id: "r2", type: "request", name: "Two Ratchanon", title: "Looking for someone to design a poster", category: "Design", description: "Need an A2 poster for our club's open house event. Have the content ready, just need it designed nicely.", budget: "250 THB", deadline: "Aug 25, 2026", status: "Open" },
+  { id: "r3", type: "request", name: "Mind Pattarapon", title: "Need an English presentation proofread", category: "Writing", description: "10-slide presentation for my capstone review. Just need grammar and phrasing checked before Monday.", budget: "150 THB", deadline: "Aug 24, 2026", status: "Open" },
+  { id: "r4", type: "request", name: "Aim Warisara", title: "Need a tutor for Statistics midterm", category: "Tutoring", description: "Struggling with hypothesis testing and regression. Looking for 2 sessions before the exam.", budget: "350 THB", deadline: "Aug 28, 2026", status: "Open" },
+  { id: "r5", type: "request", name: "Job Kittisak", title: "Need product photos for a small shop", category: "Photography", description: "About 15 products to shoot with a plain background, need them by next week.", budget: "400 THB", deadline: "Aug 27, 2026", status: "Open" },
+  { id: "r6", type: "request", name: "Fern Chayapa", title: "Need help building an Excel dashboard", category: "Excel/Data", description: "Have raw survey data and need it turned into charts and a summary dashboard for a group project.", budget: "200 THB", deadline: "Aug 23, 2026", status: "Open" },
+  { id: "r7", type: "request", name: "You", title: "Need a tutor for Financial Accounting", category: "Tutoring", description: "Struggling with journal entries and adjusting entries before the quiz. Looking for one session this week.", budget: "150 THB", deadline: "Aug 22, 2026", status: "Open" },
 ];
 
 /* ---------------- Small UI atoms ---------------- */
@@ -109,6 +118,7 @@ function Navbar({ page, setPage, onPost }) {
     { key: "home", label: "Home" },
     { key: "services", label: "Services" },
     { key: "requests", label: "Help Requests" },
+    { key: "profile", label: "Profile" },
   ];
   return (
     <div className="sticky top-0 z-30 bg-white/80 backdrop-blur border-b border-slate-100">
@@ -302,6 +312,90 @@ function EmptyState({ text }) {
     <div className="text-center py-20 text-slate-400">
       <div className="text-3xl mb-2">🔍</div>
       <p>{text}</p>
+    </div>
+  );
+}
+
+/* ---------------- Profile ---------------- */
+
+function StatusBadge({ status }) {
+  const styles = status === "Matched"
+    ? "bg-violet-50 text-violet-700"
+    : (status === "Open" || status === "Active")
+      ? "bg-emerald-50 text-emerald-700"
+      : "bg-slate-100 text-slate-500";
+  return <Badge className={styles}>{status}</Badge>;
+}
+
+function MyServiceCard({ item }) {
+  return (
+    <div className="fade-in bg-white rounded-2xl border border-slate-100 p-5 flex flex-col gap-3">
+      <div className="flex items-start justify-between gap-2">
+        <h3 className="font-bold text-slate-900 leading-snug">{item.title}</h3>
+        <StatusBadge status={item.status} />
+      </div>
+      <div className="flex items-center gap-2 flex-wrap">
+        <CategoryBadge category={item.category} />
+        <Badge className="bg-blue-50 text-blue-700">{item.price}</Badge>
+      </div>
+    </div>
+  );
+}
+
+function MyRequestCard({ item }) {
+  return (
+    <div className="fade-in bg-white rounded-2xl border border-slate-100 p-5 flex flex-col gap-3">
+      <div className="flex items-start justify-between gap-2">
+        <h3 className="font-bold text-slate-900 leading-snug">{item.title}</h3>
+        <StatusBadge status={item.status} />
+      </div>
+      <div className="flex items-center gap-2 flex-wrap">
+        <CategoryBadge category={item.category} />
+        <Badge className="bg-emerald-50 text-emerald-700">Budget: {item.budget}</Badge>
+      </div>
+      <p className="text-xs text-slate-400">Deadline: {item.deadline}</p>
+    </div>
+  );
+}
+
+function ProfilePage({ services, requests }) {
+  const myServices = services.filter(s => s.name === CURRENT_USER.name);
+  const myRequests = requests.filter(r => r.name === CURRENT_USER.name);
+
+  return (
+    <div className="fade-in max-w-6xl mx-auto px-5 py-10">
+      <div className="bg-white rounded-2xl border border-slate-100 p-6 flex items-center gap-5 flex-wrap">
+        <Avatar name={CURRENT_USER.name} size="w-16 h-16 text-lg" />
+        <div>
+          <h1 className="text-xl font-extrabold">{CURRENT_USER.name}</h1>
+          <p className="text-sm text-slate-500">{CURRENT_USER.program}</p>
+          <div className="mt-1">
+            <StarRating rating={CURRENT_USER.rating} reviews={CURRENT_USER.reviews} />
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-10">
+        <h2 className="font-bold text-lg mb-4">My Services</h2>
+        {myServices.length === 0 ? (
+          <EmptyState text="You haven't posted any services yet." />
+        ) : (
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {myServices.map(s => <MyServiceCard key={s.id} item={s} />)}
+          </div>
+        )}
+      </div>
+
+      <div className="mt-10">
+        <h2 className="font-bold text-lg mb-4">My Help Requests</h2>
+        {myRequests.length === 0 ? (
+          <EmptyState text="You haven't posted any help requests yet." />
+        ) : (
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {myRequests.map(r => <MyRequestCard key={r.id} item={r} />)}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -515,14 +609,14 @@ function App() {
   const chooseType = (t) => { setShowChooser(false); setFormType(t); };
 
   const submitService = (form) => {
-    const newItem = { id: "s" + Date.now(), type: "service", name: "You", rating: 5.0, reviews: 0, ...form };
+    const newItem = { id: "s" + Date.now(), type: "service", name: CURRENT_USER.name, rating: 5.0, reviews: 0, status: "Active", ...form };
     setServices(s => [newItem, ...s]);
     closePostFlow();
     setPage("services");
   };
 
   const submitRequest = (form) => {
-    const newItem = { id: "r" + Date.now(), type: "request", name: "You", ...form };
+    const newItem = { id: "r" + Date.now(), type: "request", name: CURRENT_USER.name, status: "Open", ...form };
     setRequests(r => [newItem, ...r]);
     closePostFlow();
     setPage("requests");
@@ -535,6 +629,7 @@ function App() {
       {page === "home" && <Home setPage={setPage} services={services} requests={requests} openDetail={openDetail} />}
       {page === "services" && <ServicesPage services={services} openDetail={openDetail} />}
       {page === "requests" && <RequestsPage requests={requests} openDetail={openDetail} />}
+      {page === "profile" && <ProfilePage services={services} requests={requests} />}
 
       {detailItem && <DetailView item={detailItem} onClose={closeDetail} />}
       {showChooser && <PostChooser onClose={closePostFlow} onChoose={chooseType} />}
