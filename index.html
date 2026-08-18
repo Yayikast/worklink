@@ -93,9 +93,9 @@ function StarRating({ rating, reviews }) {
   );
 }
 
-function PrimaryButton({ children, onClick, className = "", type = "button" }) {
+function PrimaryButton({ children, onClick, className = "", type = "button", disabled = false }) {
   return (
-    <button type={type} onClick={onClick}
+    <button type={type} onClick={onClick} disabled={disabled}
       className={`bg-blue-600 hover:bg-blue-700 active:scale-[.98] transition text-white font-semibold rounded-xl px-5 py-2.5 shadow-sm shadow-blue-600/20 ${className}`}>
       {children}
     </button>
@@ -114,29 +114,47 @@ function GhostButton({ children, onClick, className = "" }) {
 /* ---------------- Navbar ---------------- */
 
 function Navbar({ page, setPage, onPost }) {
+  const [menuOpen, setMenuOpen] = useState(false);
   const links = [
     { key: "home", label: "Home" },
     { key: "services", label: "Services" },
     { key: "requests", label: "Help Requests" },
     { key: "profile", label: "Profile" },
   ];
+  const goTo = (key) => { setPage(key); setMenuOpen(false); };
   return (
     <div className="sticky top-0 z-30 bg-white/80 backdrop-blur border-b border-slate-100">
       <div className="max-w-6xl mx-auto px-5 h-16 flex items-center justify-between">
-        <button onClick={() => setPage("home")} className="flex items-center gap-2">
+        <button onClick={() => goTo("home")} className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center font-extrabold text-sm">W</div>
           <span className="font-extrabold text-lg tracking-tight">WORKLINK <span className="text-blue-600">SIIT</span></span>
         </button>
         <div className="hidden md:flex items-center gap-1">
           {links.map(l => (
-            <button key={l.key} onClick={() => setPage(l.key)}
+            <button key={l.key} onClick={() => goTo(l.key)}
               className={`px-4 py-2 rounded-lg text-sm font-semibold transition ${page === l.key ? "bg-blue-50 text-blue-700" : "text-slate-500 hover:text-slate-800 hover:bg-slate-50"}`}>
               {l.label}
             </button>
           ))}
         </div>
-        <PrimaryButton onClick={onPost} className="!px-4 !py-2 text-sm">+ Post</PrimaryButton>
+        <div className="flex items-center gap-2">
+          <PrimaryButton onClick={onPost} className="!px-4 !py-2 text-sm">+ Post</PrimaryButton>
+          <button onClick={() => setMenuOpen(o => !o)} aria-label="Toggle menu"
+            className="md:hidden w-10 h-10 rounded-lg border border-slate-200 flex items-center justify-center text-slate-600">
+            {menuOpen ? "✕" : "☰"}
+          </button>
+        </div>
       </div>
+      {menuOpen && (
+        <div className="fade-in md:hidden border-t border-slate-100 bg-white px-5 py-3 flex flex-col gap-1">
+          {links.map(l => (
+            <button key={l.key} onClick={() => goTo(l.key)}
+              className={`text-left px-4 py-2.5 rounded-lg text-sm font-semibold transition ${page === l.key ? "bg-blue-50 text-blue-700" : "text-slate-600 hover:bg-slate-50"}`}>
+              {l.label}
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -197,7 +215,11 @@ function FilterBar({ query, setQuery, category, setCategory, placeholder }) {
       <div className="relative flex-1">
         <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">⌕</span>
         <input value={query} onChange={e => setQuery(e.target.value)} placeholder={placeholder}
-          className="w-full bg-white border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400" />
+          className="w-full bg-white border border-slate-200 rounded-xl pl-10 pr-9 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400" />
+        {query && (
+          <button type="button" onClick={() => setQuery("")} aria-label="Clear search"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">✕</button>
+        )}
       </div>
       <select value={category} onChange={e => setCategory(e.target.value)}
         className="bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400">
@@ -323,7 +345,9 @@ function StatusBadge({ status }) {
     ? "bg-violet-50 text-violet-700"
     : (status === "Open" || status === "Active")
       ? "bg-emerald-50 text-emerald-700"
-      : "bg-slate-100 text-slate-500";
+      : status === "Fulfilled"
+        ? "bg-blue-50 text-blue-700"
+        : "bg-slate-100 text-slate-500";
   return <Badge className={styles}>{status}</Badge>;
 }
 
@@ -476,6 +500,83 @@ function Field({ label, children }) {
 
 const inputCls = "w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400";
 
+function formatDate(date) {
+  return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+}
+
+function sameDay(a, b) {
+  return a && b && a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+}
+
+function DatePicker({ value, onChange }) {
+  const [open, setOpen] = useState(false);
+  const selected = value ? new Date(value) : null;
+  const validSelected = selected && !isNaN(selected) ? selected : null;
+  const [viewDate, setViewDate] = useState(validSelected ? new Date(validSelected.getFullYear(), validSelected.getMonth(), 1) : new Date());
+  const wrapRef = useRef(null);
+
+  useEffect(() => {
+    const handleOutside = (e) => { if (wrapRef.current && !wrapRef.current.contains(e.target)) setOpen(false); };
+    document.addEventListener("mousedown", handleOutside);
+    return () => document.removeEventListener("mousedown", handleOutside);
+  }, []);
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const year = viewDate.getFullYear();
+  const month = viewDate.getMonth();
+  const firstWeekday = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const cells = [...Array(firstWeekday).fill(null), ...Array(daysInMonth).keys()].map((d, i) => (d === null ? null : d + 1));
+
+  const pick = (day) => {
+    onChange(formatDate(new Date(year, month, day)));
+    setOpen(false);
+  };
+
+  return (
+    <div className="relative" ref={wrapRef}>
+      <button type="button" onClick={() => setOpen(o => !o)}
+        className={`${inputCls} flex items-center justify-between text-left ${!value ? "text-slate-400" : "text-slate-900"}`}>
+        <span>{value || "Select a date"}</span>
+        <span aria-hidden="true">📅</span>
+      </button>
+      {open && (
+        <div className="pop-in absolute z-20 mt-2 w-72 bg-white rounded-2xl border border-slate-200 shadow-xl p-4">
+          <div className="flex items-center justify-between mb-3">
+            <button type="button" onClick={() => setViewDate(new Date(year, month - 1, 1))}
+              className="w-8 h-8 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-500 font-bold">‹</button>
+            <p className="font-bold text-sm">{viewDate.toLocaleDateString("en-US", { month: "long", year: "numeric" })}</p>
+            <button type="button" onClick={() => setViewDate(new Date(year, month + 1, 1))}
+              className="w-8 h-8 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-500 font-bold">›</button>
+          </div>
+          <div className="grid grid-cols-7 gap-1 text-center text-xs font-semibold text-slate-400 mb-1">
+            {["S", "M", "T", "W", "T", "F", "S"].map((d, i) => <div key={i}>{d}</div>)}
+          </div>
+          <div className="grid grid-cols-7 gap-1">
+            {cells.map((day, i) => {
+              if (day === null) return <div key={i} />;
+              const date = new Date(year, month, day);
+              const isPast = date < today;
+              const isSelected = sameDay(date, validSelected);
+              const isToday = sameDay(date, today);
+              return (
+                <button type="button" key={i} disabled={isPast} onClick={() => pick(day)}
+                  className={`w-9 h-9 rounded-lg text-sm font-medium transition
+                    ${isSelected ? "bg-blue-600 text-white" : isPast ? "text-slate-300 cursor-not-allowed" : "text-slate-700 hover:bg-blue-50"}
+                    ${isToday && !isSelected ? "ring-1 ring-inset ring-blue-400" : ""}`}>
+                  {day}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function ServiceForm({ onClose, onSubmit }) {
   const [form, setForm] = useState({ title: "", category: CATEGORIES[0], description: "", price: "" });
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
@@ -493,7 +594,7 @@ function ServiceForm({ onClose, onSubmit }) {
         <Field label="Price"><input required value={form.price} onChange={set("price")} className={inputCls} placeholder="e.g. 150 THB/hr" /></Field>
         <div className="flex gap-3 pt-2">
           <GhostButton onClick={onClose} className="flex-1">Cancel</GhostButton>
-          <PrimaryButton type="submit" className="flex-1">Post Service</PrimaryButton>
+          <PrimaryButton type="submit" disabled={!valid} className="flex-1 disabled:opacity-40 disabled:cursor-not-allowed">Post Service</PrimaryButton>
         </div>
       </form>
     </Modal>
@@ -516,63 +617,109 @@ function RequestForm({ onClose, onSubmit }) {
         <Field label="Description"><textarea required value={form.description} onChange={set("description")} rows="3" className={inputCls} placeholder="Describe what you need help with" /></Field>
         <div className="grid grid-cols-2 gap-4">
           <Field label="Budget"><input required value={form.budget} onChange={set("budget")} className={inputCls} placeholder="e.g. 150 THB" /></Field>
-          <Field label="Deadline"><input required value={form.deadline} onChange={set("deadline")} className={inputCls} placeholder="e.g. Aug 25, 2026" /></Field>
+          <Field label="Deadline"><DatePicker value={form.deadline} onChange={(d) => setForm({ ...form, deadline: d })} /></Field>
         </div>
         <div className="flex gap-3 pt-2">
           <GhostButton onClick={onClose} className="flex-1">Cancel</GhostButton>
-          <PrimaryButton type="submit" className="flex-1">Post Request</PrimaryButton>
+          <PrimaryButton type="submit" disabled={!valid} className="flex-1 disabled:opacity-40 disabled:cursor-not-allowed">Post Request</PrimaryButton>
         </div>
       </form>
     </Modal>
   );
 }
 
-function EditServiceForm({ item, onClose, onSave }) {
-  const [form, setForm] = useState({ title: item.title, category: item.category, description: item.description, price: item.price });
+function DeleteConfirm({ onConfirm, onCancel, label }) {
+  return (
+    <div className="fade-in flex items-center justify-between gap-3 bg-rose-50 border border-rose-200 rounded-xl px-4 py-3">
+      <p className="text-sm font-semibold text-rose-700">Delete this {label}? This can't be undone.</p>
+      <div className="flex gap-2 shrink-0">
+        <button type="button" onClick={onCancel} className="text-sm font-semibold text-slate-600 hover:text-slate-800 px-2">Cancel</button>
+        <button type="button" onClick={onConfirm} className="text-sm font-semibold text-white bg-rose-600 hover:bg-rose-700 rounded-lg px-3 py-1.5">Delete</button>
+      </div>
+    </div>
+  );
+}
+
+function EditServiceForm({ item, onClose, onSave, onDelete }) {
+  const [form, setForm] = useState({ title: item.title, category: item.category, description: item.description, price: item.price, status: item.status });
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
   const valid = form.title && form.description && form.price;
   return (
     <Modal onClose={onClose} title="Edit Service" subtitle={item.title}>
       <form onSubmit={e => { e.preventDefault(); if (valid) onSave(item.id, form); }} className="space-y-4">
         <Field label="Title"><input required value={form.title} onChange={set("title")} className={inputCls} /></Field>
-        <Field label="Category">
-          <select value={form.category} onChange={set("category")} className={inputCls}>
-            {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-          </select>
-        </Field>
+        <div className="grid grid-cols-2 gap-4">
+          <Field label="Category">
+            <select value={form.category} onChange={set("category")} className={inputCls}>
+              {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </Field>
+          <Field label="Status">
+            <select value={form.status} onChange={set("status")} className={inputCls}>
+              <option value="Active">Active</option>
+              <option value="Paused">Paused</option>
+            </select>
+          </Field>
+        </div>
         <Field label="Description"><textarea required value={form.description} onChange={set("description")} rows="3" className={inputCls} /></Field>
         <Field label="Price"><input required value={form.price} onChange={set("price")} className={inputCls} /></Field>
         <div className="flex gap-3 pt-2">
           <GhostButton onClick={onClose} className="flex-1">Cancel</GhostButton>
-          <PrimaryButton type="submit" className="flex-1">Save Changes</PrimaryButton>
+          <PrimaryButton type="submit" disabled={!valid} className="flex-1 disabled:opacity-40 disabled:cursor-not-allowed">Save Changes</PrimaryButton>
         </div>
+        {confirmingDelete ? (
+          <DeleteConfirm label="service" onCancel={() => setConfirmingDelete(false)} onConfirm={() => onDelete(item.id)} />
+        ) : (
+          <button type="button" onClick={() => setConfirmingDelete(true)}
+            className="w-full text-center text-sm font-semibold text-rose-600 hover:text-rose-700 pt-1">
+            Delete this service
+          </button>
+        )}
       </form>
     </Modal>
   );
 }
 
-function EditRequestForm({ item, onClose, onSave }) {
-  const [form, setForm] = useState({ title: item.title, category: item.category, description: item.description, budget: item.budget, deadline: item.deadline });
+function EditRequestForm({ item, onClose, onSave, onDelete }) {
+  const [form, setForm] = useState({ title: item.title, category: item.category, description: item.description, budget: item.budget, deadline: item.deadline, status: item.status });
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
   const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
   const valid = form.title && form.description && form.budget && form.deadline;
   return (
     <Modal onClose={onClose} title="Edit Help Request" subtitle={item.title}>
       <form onSubmit={e => { e.preventDefault(); if (valid) onSave(item.id, form); }} className="space-y-4">
         <Field label="Title"><input required value={form.title} onChange={set("title")} className={inputCls} /></Field>
-        <Field label="Category">
-          <select value={form.category} onChange={set("category")} className={inputCls}>
-            {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-          </select>
-        </Field>
+        <div className="grid grid-cols-2 gap-4">
+          <Field label="Category">
+            <select value={form.category} onChange={set("category")} className={inputCls}>
+              {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </Field>
+          <Field label="Status">
+            <select value={form.status} onChange={set("status")} className={inputCls}>
+              <option value="Open">Open</option>
+              <option value="Fulfilled">Fulfilled</option>
+            </select>
+          </Field>
+        </div>
         <Field label="Description"><textarea required value={form.description} onChange={set("description")} rows="3" className={inputCls} /></Field>
         <div className="grid grid-cols-2 gap-4">
           <Field label="Budget"><input required value={form.budget} onChange={set("budget")} className={inputCls} /></Field>
-          <Field label="Deadline"><input required value={form.deadline} onChange={set("deadline")} className={inputCls} /></Field>
+          <Field label="Deadline"><DatePicker value={form.deadline} onChange={(d) => setForm({ ...form, deadline: d })} /></Field>
         </div>
         <div className="flex gap-3 pt-2">
           <GhostButton onClick={onClose} className="flex-1">Cancel</GhostButton>
-          <PrimaryButton type="submit" className="flex-1">Save Changes</PrimaryButton>
+          <PrimaryButton type="submit" disabled={!valid} className="flex-1 disabled:opacity-40 disabled:cursor-not-allowed">Save Changes</PrimaryButton>
         </div>
+        {confirmingDelete ? (
+          <DeleteConfirm label="help request" onCancel={() => setConfirmingDelete(false)} onConfirm={() => onDelete(item.id)} />
+        ) : (
+          <button type="button" onClick={() => setConfirmingDelete(true)}
+            className="w-full text-center text-sm font-semibold text-rose-600 hover:text-rose-700 pt-1">
+            Delete this help request
+          </button>
+        )}
       </form>
     </Modal>
   );
@@ -599,6 +746,7 @@ function Modal({ children, onClose, title, subtitle }) {
 
 function DetailView({ item, chatEntry, onUpdateChat, onClose, onMatched }) {
   const isService = item.type === "service";
+  const isOwnPost = item.name === CURRENT_USER.name;
   const [messages, setMessages] = useState(chatEntry ? chatEntry.messages : [
     { from: "them", text: isService
         ? `Hi! Thanks for checking out my post. Feel free to ask me anything about "${item.title}".`
@@ -606,6 +754,7 @@ function DetailView({ item, chatEntry, onUpdateChat, onClose, onMatched }) {
   ]);
   const [draft, setDraft] = useState("");
   const [matched, setMatched] = useState(chatEntry ? chatEntry.matched : false);
+  const [justMatched, setJustMatched] = useState(false);
   const scrollRef = useRef(null);
 
   useEffect(() => {
@@ -629,63 +778,88 @@ function DetailView({ item, chatEntry, onUpdateChat, onClose, onMatched }) {
 
   const handleMatch = () => {
     setMatched(true);
+    setJustMatched(true);
     onUpdateChat(item, messages, true);
     onMatched && onMatched();
   };
 
-  return (
-    <Modal onClose={onClose} title={item.title} subtitle={item.name}>
-      {matched ? (
+  if (justMatched) {
+    return (
+      <Modal onClose={onClose} title={item.title} subtitle={item.name}>
         <div className="pop-in text-center py-10">
           <div className="text-5xl mb-4">🎉</div>
           <h3 className="text-2xl font-extrabold mb-1">It's a match!</h3>
           <p className="text-slate-500 mb-6">You can now work together.</p>
           <PrimaryButton onClick={onClose}>Done</PrimaryButton>
         </div>
-      ) : (
-        <div>
-          <div className="flex items-center gap-3 mb-3">
-            <Avatar name={item.name} />
-            <div>
-              <p className="font-semibold text-sm">{item.name}</p>
-              <div className="flex gap-2">
-                <CategoryBadge category={item.category} />
-                {isService
-                  ? <Badge className="bg-blue-50 text-blue-700">{item.price}</Badge>
-                  : <Badge className="bg-emerald-50 text-emerald-700">Budget: {item.budget}</Badge>}
+      </Modal>
+    );
+  }
+
+  return (
+    <Modal onClose={onClose} title={item.title} subtitle={item.name}>
+      <div>
+        <div className="flex items-center gap-3 mb-3">
+          <Avatar name={item.name} />
+          <div>
+            <p className="font-semibold text-sm">{isOwnPost ? "You" : item.name}</p>
+            <div className="flex gap-2">
+              <CategoryBadge category={item.category} />
+              {isService
+                ? <Badge className="bg-blue-50 text-blue-700">{item.price}</Badge>
+                : <Badge className="bg-emerald-50 text-emerald-700">Budget: {item.budget}</Badge>}
+            </div>
+          </div>
+        </div>
+        <p className="text-sm text-slate-600 mb-2">{item.description}</p>
+        {!isService && <p className="text-xs text-slate-400 mb-4">Deadline: {item.deadline}</p>}
+
+        {isOwnPost ? (
+          <div className="bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm text-slate-500">
+            This is one of your own posts. Head to your <span className="font-semibold text-slate-700">Profile</span> to edit or manage it.
+          </div>
+        ) : (
+          <React.Fragment>
+            {matched && (
+              <div className="mb-4 flex items-center gap-2 bg-violet-50 border border-violet-100 rounded-xl px-4 py-2.5 text-sm text-violet-700 font-semibold">
+                <span>🎉</span> You matched on this — chat below to coordinate.
+              </div>
+            )}
+            <div className="border border-slate-200 rounded-2xl overflow-hidden">
+              <div className="bg-slate-50 px-4 py-2 text-xs font-bold text-slate-500 uppercase tracking-wide">Chat</div>
+              <div ref={scrollRef} className="h-56 overflow-y-auto px-4 py-3 space-y-2 bg-white">
+                {messages.map((m, i) => (
+                  <div key={i} className={`flex ${m.from === "me" ? "justify-end" : "justify-start"}`}>
+                    <div className={`max-w-[75%] rounded-2xl px-3.5 py-2 text-sm ${m.from === "me" ? "bg-blue-600 text-white rounded-br-sm" : "bg-slate-100 text-slate-700 rounded-bl-sm"}`}>
+                      {m.text}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="flex items-center gap-2 border-t border-slate-100 p-2">
+                <input
+                  value={draft}
+                  onChange={e => setDraft(e.target.value)}
+                  onKeyDown={e => e.key === "Enter" && send()}
+                  placeholder="Type a message..."
+                  className="flex-1 text-sm px-3 py-2 rounded-lg bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500/30" />
+                <button onClick={send} disabled={!draft.trim()}
+                  className="bg-blue-600 hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-lg px-4 py-2 text-sm font-semibold">Send</button>
               </div>
             </div>
-          </div>
-          <p className="text-sm text-slate-600 mb-2">{item.description}</p>
-          {!isService && <p className="text-xs text-slate-400 mb-4">Deadline: {item.deadline}</p>}
 
-          <div className="mt-4 border border-slate-200 rounded-2xl overflow-hidden">
-            <div className="bg-slate-50 px-4 py-2 text-xs font-bold text-slate-500 uppercase tracking-wide">Chat</div>
-            <div ref={scrollRef} className="h-56 overflow-y-auto px-4 py-3 space-y-2 bg-white">
-              {messages.map((m, i) => (
-                <div key={i} className={`flex ${m.from === "me" ? "justify-end" : "justify-start"}`}>
-                  <div className={`max-w-[75%] rounded-2xl px-3.5 py-2 text-sm ${m.from === "me" ? "bg-blue-600 text-white rounded-br-sm" : "bg-slate-100 text-slate-700 rounded-bl-sm"}`}>
-                    {m.text}
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div className="flex items-center gap-2 border-t border-slate-100 p-2">
-              <input
-                value={draft}
-                onChange={e => setDraft(e.target.value)}
-                onKeyDown={e => e.key === "Enter" && send()}
-                placeholder="Type a message..."
-                className="flex-1 text-sm px-3 py-2 rounded-lg bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500/30" />
-              <button onClick={send} className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-4 py-2 text-sm font-semibold">Send</button>
-            </div>
-          </div>
-
-          <PrimaryButton onClick={handleMatch} className="w-full mt-5">
-            {isService ? "Request Help" : "Offer to Help"}
-          </PrimaryButton>
-        </div>
-      )}
+            {matched ? (
+              <GhostButton className="w-full mt-5 !text-violet-700 !border-violet-200 cursor-default" onClick={() => {}}>
+                Matched ✓
+              </GhostButton>
+            ) : (
+              <PrimaryButton onClick={handleMatch} className="w-full mt-5">
+                {isService ? "Request Help" : "Offer to Help"}
+              </PrimaryButton>
+            )}
+          </React.Fragment>
+        )}
+      </div>
     </Modal>
   );
 }
@@ -738,6 +912,16 @@ function App() {
     closeEdit();
   };
 
+  const deleteService = (id) => {
+    setServices(s => s.filter(x => x.id !== id));
+    closeEdit();
+  };
+
+  const deleteRequest = (id) => {
+    setRequests(r => r.filter(x => x.id !== id));
+    closeEdit();
+  };
+
   const updateChat = (item, messages, matched) => {
     setChats(prev => ({ ...prev, [item.id]: { item, messages, matched } }));
   };
@@ -771,8 +955,8 @@ function App() {
       {showChooser && <PostChooser onClose={closePostFlow} onChoose={chooseType} />}
       {formType === "service" && <ServiceForm onClose={closePostFlow} onSubmit={submitService} />}
       {formType === "request" && <RequestForm onClose={closePostFlow} onSubmit={submitRequest} />}
-      {editTarget?.type === "service" && <EditServiceForm item={editTarget.item} onClose={closeEdit} onSave={saveService} />}
-      {editTarget?.type === "request" && <EditRequestForm item={editTarget.item} onClose={closeEdit} onSave={saveRequest} />}
+      {editTarget?.type === "service" && <EditServiceForm item={editTarget.item} onClose={closeEdit} onSave={saveService} onDelete={deleteService} />}
+      {editTarget?.type === "request" && <EditRequestForm item={editTarget.item} onClose={closeEdit} onSave={saveRequest} onDelete={deleteRequest} />}
 
       <footer className="text-center text-xs text-slate-400 py-10">
         WORKLINK SIIT · Built for SIIT students, by SIIT students.
