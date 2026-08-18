@@ -161,15 +161,26 @@ function Navbar({ page, setPage, onPost }) {
 
 /* ---------------- Cards ---------------- */
 
-function ServiceCard({ item, onView }) {
+function MatchedRibbon() {
+  return (
+    <div className="flex items-center gap-1 text-xs font-bold text-violet-700 bg-violet-50 px-2.5 py-1 rounded-full">
+      <span>🎉</span> Matched
+    </div>
+  );
+}
+
+function ServiceCard({ item, onView, matched }) {
   return (
     <div className="fade-in bg-white rounded-2xl border border-slate-100 p-5 flex flex-col gap-3 hover:shadow-lg hover:shadow-slate-200/60 hover:-translate-y-0.5 transition">
-      <div className="flex items-center gap-3">
-        <Avatar name={item.name} />
-        <div className="min-w-0">
-          <p className="font-semibold text-sm truncate">{item.name}</p>
-          <StarRating rating={item.rating} reviews={item.reviews} />
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-3 min-w-0">
+          <Avatar name={item.name} />
+          <div className="min-w-0">
+            <p className="font-semibold text-sm truncate">{item.name}</p>
+            <StarRating rating={item.rating} reviews={item.reviews} />
+          </div>
         </div>
+        {matched && <MatchedRibbon />}
       </div>
       <div>
         <h3 className="font-bold text-slate-900 leading-snug">{item.title}</h3>
@@ -179,20 +190,25 @@ function ServiceCard({ item, onView }) {
         <CategoryBadge category={item.category} />
         <Badge className="bg-blue-50 text-blue-700">{item.price}</Badge>
       </div>
-      <PrimaryButton onClick={() => onView(item)} className="w-full mt-1 text-sm">View</PrimaryButton>
+      <PrimaryButton onClick={() => onView(item)} className="w-full mt-1 text-sm">
+        {matched ? "Continue Chat" : "View"}
+      </PrimaryButton>
     </div>
   );
 }
 
-function RequestCard({ item, onView }) {
+function RequestCard({ item, onView, matched }) {
   return (
     <div className="fade-in bg-white rounded-2xl border border-slate-100 p-5 flex flex-col gap-3 hover:shadow-lg hover:shadow-slate-200/60 hover:-translate-y-0.5 transition">
-      <div className="flex items-center gap-3">
-        <Avatar name={item.name} />
-        <div className="min-w-0">
-          <p className="font-semibold text-sm truncate">{item.name}</p>
-          <p className="text-xs text-slate-400">Deadline: {item.deadline}</p>
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-3 min-w-0">
+          <Avatar name={item.name} />
+          <div className="min-w-0">
+            <p className="font-semibold text-sm truncate">{item.name}</p>
+            <p className="text-xs text-slate-400">Deadline: {item.deadline}</p>
+          </div>
         </div>
+        {matched && <MatchedRibbon />}
       </div>
       <div>
         <h3 className="font-bold text-slate-900 leading-snug">{item.title}</h3>
@@ -202,7 +218,9 @@ function RequestCard({ item, onView }) {
         <CategoryBadge category={item.category} />
         <Badge className="bg-emerald-50 text-emerald-700">Budget: {item.budget}</Badge>
       </div>
-      <GhostButton onClick={() => onView(item)} className="w-full mt-1 text-sm !border-blue-200 !text-blue-700">View</GhostButton>
+      <GhostButton onClick={() => onView(item)} className="w-full mt-1 text-sm !border-blue-200 !text-blue-700">
+        {matched ? "Continue Chat" : "View"}
+      </GhostButton>
     </div>
   );
 }
@@ -232,7 +250,7 @@ function FilterBar({ query, setQuery, category, setCategory, placeholder }) {
 
 /* ---------------- Home Page ---------------- */
 
-function Home({ setPage, services, requests, openDetail }) {
+function Home({ setPage, services, requests, openDetail, chats }) {
   return (
     <div className="fade-in">
       <div className="max-w-6xl mx-auto px-5 pt-16 pb-12 text-center">
@@ -262,7 +280,7 @@ function Home({ setPage, services, requests, openDetail }) {
           <button onClick={() => setPage("services")} className="text-sm font-semibold text-blue-600 hover:underline">See all →</button>
         </div>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {services.slice(0, 3).map(s => <ServiceCard key={s.id} item={s} onView={openDetail} />)}
+          {services.slice(0, 3).map(s => <ServiceCard key={s.id} item={s} onView={openDetail} matched={!!chats[s.id]?.matched} />)}
         </div>
       </div>
 
@@ -272,7 +290,7 @@ function Home({ setPage, services, requests, openDetail }) {
           <button onClick={() => setPage("requests")} className="text-sm font-semibold text-blue-600 hover:underline">See all →</button>
         </div>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {requests.slice(0, 3).map(r => <RequestCard key={r.id} item={r} onView={openDetail} />)}
+          {requests.slice(0, 3).map(r => <RequestCard key={r.id} item={r} onView={openDetail} matched={!!chats[r.id]?.matched} />)}
         </div>
       </div>
     </div>
@@ -281,7 +299,7 @@ function Home({ setPage, services, requests, openDetail }) {
 
 /* ---------------- Services / Requests list pages ---------------- */
 
-function ServicesPage({ services, openDetail }) {
+function ServicesPage({ services, openDetail, chats }) {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("All");
   const filtered = useMemo(() => services.filter(s =>
@@ -298,14 +316,14 @@ function ServicesPage({ services, openDetail }) {
         <EmptyState text="No services match your search." />
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filtered.map(s => <ServiceCard key={s.id} item={s} onView={openDetail} />)}
+          {filtered.map(s => <ServiceCard key={s.id} item={s} onView={openDetail} matched={!!chats[s.id]?.matched} />)}
         </div>
       )}
     </div>
   );
 }
 
-function RequestsPage({ requests, openDetail }) {
+function RequestsPage({ requests, openDetail, chats }) {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("All");
   const filtered = useMemo(() => requests.filter(r =>
@@ -322,7 +340,7 @@ function RequestsPage({ requests, openDetail }) {
         <EmptyState text="No help requests match your search." />
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filtered.map(r => <RequestCard key={r.id} item={r} onView={openDetail} />)}
+          {filtered.map(r => <RequestCard key={r.id} item={r} onView={openDetail} matched={!!chats[r.id]?.matched} />)}
         </div>
       )}
     </div>
@@ -510,16 +528,44 @@ function sameDay(a, b) {
 
 function DatePicker({ value, onChange }) {
   const [open, setOpen] = useState(false);
+  const [pos, setPos] = useState({ top: 0, left: 0, flip: false });
   const selected = value ? new Date(value) : null;
   const validSelected = selected && !isNaN(selected) ? selected : null;
   const [viewDate, setViewDate] = useState(validSelected ? new Date(validSelected.getFullYear(), validSelected.getMonth(), 1) : new Date());
-  const wrapRef = useRef(null);
+  const btnRef = useRef(null);
+  const panelRef = useRef(null);
 
   useEffect(() => {
-    const handleOutside = (e) => { if (wrapRef.current && !wrapRef.current.contains(e.target)) setOpen(false); };
+    const handleOutside = (e) => {
+      if (panelRef.current && panelRef.current.contains(e.target)) return;
+      if (btnRef.current && btnRef.current.contains(e.target)) return;
+      setOpen(false);
+    };
+    const handleReflow = () => setOpen(false);
     document.addEventListener("mousedown", handleOutside);
-    return () => document.removeEventListener("mousedown", handleOutside);
+    window.addEventListener("resize", handleReflow);
+    window.addEventListener("scroll", handleReflow, true);
+    return () => {
+      document.removeEventListener("mousedown", handleOutside);
+      window.removeEventListener("resize", handleReflow);
+      window.removeEventListener("scroll", handleReflow, true);
+    };
   }, []);
+
+  const CAL_W = 288;
+  const CAL_H = 336;
+
+  const togglePicker = () => {
+    if (!open && btnRef.current) {
+      const rect = btnRef.current.getBoundingClientRect();
+      let left = rect.left;
+      if (left + CAL_W > window.innerWidth - 12) left = Math.max(12, window.innerWidth - CAL_W - 12);
+      const fitsBelow = rect.bottom + 8 + CAL_H <= window.innerHeight - 12;
+      const top = fitsBelow ? rect.bottom + 8 : Math.max(12, rect.top - CAL_H - 8);
+      setPos({ top, left, flip: !fitsBelow });
+    }
+    setOpen(o => !o);
+  };
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -536,14 +582,15 @@ function DatePicker({ value, onChange }) {
   };
 
   return (
-    <div className="relative" ref={wrapRef}>
-      <button type="button" onClick={() => setOpen(o => !o)}
+    <React.Fragment>
+      <button ref={btnRef} type="button" onClick={togglePicker}
         className={`${inputCls} flex items-center justify-between text-left ${!value ? "text-slate-400" : "text-slate-900"}`}>
         <span>{value || "Select a date"}</span>
         <span aria-hidden="true">📅</span>
       </button>
       {open && (
-        <div className="pop-in absolute z-20 mt-2 w-72 bg-white rounded-2xl border border-slate-200 shadow-xl p-4">
+        <div ref={panelRef} style={{ position: "fixed", top: pos.top, left: pos.left, width: CAL_W }}
+          className="pop-in z-[70] bg-white rounded-2xl border border-slate-200 shadow-2xl p-4">
           <div className="flex items-center justify-between mb-3">
             <button type="button" onClick={() => setViewDate(new Date(year, month - 1, 1))}
               className="w-8 h-8 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-500 font-bold">‹</button>
@@ -573,7 +620,7 @@ function DatePicker({ value, onChange }) {
           </div>
         </div>
       )}
-    </div>
+    </React.Fragment>
   );
 }
 
@@ -742,9 +789,9 @@ function Modal({ children, onClose, title, subtitle }) {
   );
 }
 
-/* ---------------- Detail + Chat ---------------- */
+/* ---------------- Detail + Chat (full page) ---------------- */
 
-function DetailView({ item, chatEntry, onUpdateChat, onClose, onMatched }) {
+function DetailPage({ item, chatEntry, onUpdateChat, onBack }) {
   const isService = item.type === "service";
   const isOwnPost = item.name === CURRENT_USER.name;
   const [messages, setMessages] = useState(chatEntry ? chatEntry.messages : [
@@ -780,87 +827,87 @@ function DetailView({ item, chatEntry, onUpdateChat, onClose, onMatched }) {
     setMatched(true);
     setJustMatched(true);
     onUpdateChat(item, messages, true);
-    onMatched && onMatched();
   };
 
-  if (justMatched) {
-    return (
-      <Modal onClose={onClose} title={item.title} subtitle={item.name}>
-        <div className="pop-in text-center py-10">
-          <div className="text-5xl mb-4">🎉</div>
-          <h3 className="text-2xl font-extrabold mb-1">It's a match!</h3>
-          <p className="text-slate-500 mb-6">You can now work together.</p>
-          <PrimaryButton onClick={onClose}>Done</PrimaryButton>
-        </div>
-      </Modal>
-    );
-  }
-
   return (
-    <Modal onClose={onClose} title={item.title} subtitle={item.name}>
-      <div>
-        <div className="flex items-center gap-3 mb-3">
-          <Avatar name={item.name} />
-          <div>
-            <p className="font-semibold text-sm">{isOwnPost ? "You" : item.name}</p>
-            <div className="flex gap-2">
-              <CategoryBadge category={item.category} />
-              {isService
-                ? <Badge className="bg-blue-50 text-blue-700">{item.price}</Badge>
-                : <Badge className="bg-emerald-50 text-emerald-700">Budget: {item.budget}</Badge>}
-            </div>
-          </div>
+    <div className="fade-in max-w-2xl mx-auto px-5 py-10">
+      <button onClick={onBack} className="mb-6 inline-flex items-center gap-1.5 text-sm font-semibold text-slate-500 hover:text-slate-800 transition">
+        <span aria-hidden="true">←</span> Back
+      </button>
+
+      {justMatched ? (
+        <div className="pop-in bg-white rounded-3xl border border-slate-100 p-10 text-center">
+          <div className="text-5xl mb-4">🎉</div>
+          <h1 className="text-2xl font-extrabold mb-1">It's a match!</h1>
+          <p className="text-slate-500 mb-6">You can now work together.</p>
+          <PrimaryButton onClick={onBack}>Done</PrimaryButton>
         </div>
-        <p className="text-sm text-slate-600 mb-2">{item.description}</p>
-        {!isService && <p className="text-xs text-slate-400 mb-4">Deadline: {item.deadline}</p>}
-
-        {isOwnPost ? (
-          <div className="bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm text-slate-500">
-            This is one of your own posts. Head to your <span className="font-semibold text-slate-700">Profile</span> to edit or manage it.
-          </div>
-        ) : (
-          <React.Fragment>
-            {matched && (
-              <div className="mb-4 flex items-center gap-2 bg-violet-50 border border-violet-100 rounded-xl px-4 py-2.5 text-sm text-violet-700 font-semibold">
-                <span>🎉</span> You matched on this — chat below to coordinate.
-              </div>
-            )}
-            <div className="border border-slate-200 rounded-2xl overflow-hidden">
-              <div className="bg-slate-50 px-4 py-2 text-xs font-bold text-slate-500 uppercase tracking-wide">Chat</div>
-              <div ref={scrollRef} className="h-56 overflow-y-auto px-4 py-3 space-y-2 bg-white">
-                {messages.map((m, i) => (
-                  <div key={i} className={`flex ${m.from === "me" ? "justify-end" : "justify-start"}`}>
-                    <div className={`max-w-[75%] rounded-2xl px-3.5 py-2 text-sm ${m.from === "me" ? "bg-blue-600 text-white rounded-br-sm" : "bg-slate-100 text-slate-700 rounded-bl-sm"}`}>
-                      {m.text}
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <div className="flex items-center gap-2 border-t border-slate-100 p-2">
-                <input
-                  value={draft}
-                  onChange={e => setDraft(e.target.value)}
-                  onKeyDown={e => e.key === "Enter" && send()}
-                  placeholder="Type a message..."
-                  className="flex-1 text-sm px-3 py-2 rounded-lg bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500/30" />
-                <button onClick={send} disabled={!draft.trim()}
-                  className="bg-blue-600 hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-lg px-4 py-2 text-sm font-semibold">Send</button>
-              </div>
+      ) : (
+        <div className="bg-white rounded-3xl border border-slate-100 p-6 sm:p-8">
+          <div className="flex items-center gap-3 mb-3">
+            <Avatar name={item.name} size="w-12 h-12 text-base" />
+            <div>
+              <h1 className="text-xl font-extrabold leading-snug">{item.title}</h1>
+              <p className="text-sm text-slate-500">{isOwnPost ? "You" : item.name}</p>
             </div>
+          </div>
+          <div className="flex items-center gap-2 flex-wrap mb-3">
+            <CategoryBadge category={item.category} />
+            {isService
+              ? <Badge className="bg-blue-50 text-blue-700">{item.price}</Badge>
+              : <Badge className="bg-emerald-50 text-emerald-700">Budget: {item.budget}</Badge>}
+          </div>
+          <p className="text-sm text-slate-600 mb-2">{item.description}</p>
+          {!isService && <p className="text-xs text-slate-400 mb-4">Deadline: {item.deadline}</p>}
 
-            {matched ? (
-              <GhostButton className="w-full mt-5 !text-violet-700 !border-violet-200 cursor-default" onClick={() => {}}>
-                Matched ✓
-              </GhostButton>
-            ) : (
-              <PrimaryButton onClick={handleMatch} className="w-full mt-5">
-                {isService ? "Request Help" : "Offer to Help"}
-              </PrimaryButton>
-            )}
-          </React.Fragment>
-        )}
-      </div>
-    </Modal>
+          {isOwnPost ? (
+            <div className="mt-4 bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm text-slate-500">
+              This is one of your own posts. Head to your <span className="font-semibold text-slate-700">Profile</span> to edit or manage it.
+            </div>
+          ) : (
+            <React.Fragment>
+              {matched && (
+                <div className="mt-4 mb-4 flex items-center gap-2 bg-violet-50 border border-violet-100 rounded-xl px-4 py-2.5 text-sm text-violet-700 font-semibold">
+                  <span>🎉</span> You matched on this — chat below to coordinate.
+                </div>
+              )}
+              <div className={`border border-slate-200 rounded-2xl overflow-hidden ${matched ? "" : "mt-4"}`}>
+                <div className="bg-slate-50 px-4 py-2 text-xs font-bold text-slate-500 uppercase tracking-wide">Chat</div>
+                <div ref={scrollRef} className="h-64 overflow-y-auto px-4 py-3 space-y-2 bg-white">
+                  {messages.map((m, i) => (
+                    <div key={i} className={`flex ${m.from === "me" ? "justify-end" : "justify-start"}`}>
+                      <div className={`max-w-[75%] rounded-2xl px-3.5 py-2 text-sm ${m.from === "me" ? "bg-blue-600 text-white rounded-br-sm" : "bg-slate-100 text-slate-700 rounded-bl-sm"}`}>
+                        {m.text}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex items-center gap-2 border-t border-slate-100 p-2">
+                  <input
+                    value={draft}
+                    onChange={e => setDraft(e.target.value)}
+                    onKeyDown={e => e.key === "Enter" && send()}
+                    placeholder="Type a message..."
+                    className="flex-1 text-sm px-3 py-2 rounded-lg bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500/30" />
+                  <button onClick={send} disabled={!draft.trim()}
+                    className="bg-blue-600 hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-lg px-4 py-2 text-sm font-semibold">Send</button>
+                </div>
+              </div>
+
+              {matched ? (
+                <GhostButton className="w-full mt-5 !text-violet-700 !border-violet-200 cursor-default" onClick={() => {}}>
+                  Matched ✓
+                </GhostButton>
+              ) : (
+                <PrimaryButton onClick={handleMatch} className="w-full mt-5">
+                  {isService ? "Request Help" : "Offer to Help"}
+                </PrimaryButton>
+              )}
+            </React.Fragment>
+          )}
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -872,13 +919,18 @@ function App() {
   const [requests, setRequests] = useState(INITIAL_REQUESTS);
 
   const [detailItem, setDetailItem] = useState(null);
+  const [returnPage, setReturnPage] = useState("home");
   const [showChooser, setShowChooser] = useState(false);
   const [formType, setFormType] = useState(null); // 'service' | 'request'
   const [editTarget, setEditTarget] = useState(null); // { type: 'service'|'request', item }
   const [chats, setChats] = useState({}); // id -> { item, messages, matched }
 
-  const openDetail = (item) => setDetailItem(item);
-  const closeDetail = () => setDetailItem(null);
+  const openDetail = (item) => {
+    setReturnPage(page);
+    setDetailItem(item);
+    setPage("detail");
+  };
+  const backFromDetail = () => setPage(returnPage);
 
   const openPost = () => setShowChooser(true);
   const closePostFlow = () => { setShowChooser(false); setFormType(null); };
@@ -930,9 +982,9 @@ function App() {
     <div>
       <Navbar page={page} setPage={setPage} onPost={openPost} />
 
-      {page === "home" && <Home setPage={setPage} services={services} requests={requests} openDetail={openDetail} />}
-      {page === "services" && <ServicesPage services={services} openDetail={openDetail} />}
-      {page === "requests" && <RequestsPage requests={requests} openDetail={openDetail} />}
+      {page === "home" && <Home setPage={setPage} services={services} requests={requests} openDetail={openDetail} chats={chats} />}
+      {page === "services" && <ServicesPage services={services} openDetail={openDetail} chats={chats} />}
+      {page === "requests" && <RequestsPage requests={requests} openDetail={openDetail} chats={chats} />}
       {page === "profile" && (
         <ProfilePage
           services={services}
@@ -943,15 +995,15 @@ function App() {
           onOpenChat={openDetail}
         />
       )}
-
-      {detailItem && (
-        <DetailView
+      {page === "detail" && detailItem && (
+        <DetailPage
           item={detailItem}
           chatEntry={chats[detailItem.id]}
           onUpdateChat={updateChat}
-          onClose={closeDetail}
+          onBack={backFromDetail}
         />
       )}
+
       {showChooser && <PostChooser onClose={closePostFlow} onChoose={chooseType} />}
       {formType === "service" && <ServiceForm onClose={closePostFlow} onSubmit={submitService} />}
       {formType === "request" && <RequestForm onClose={closePostFlow} onSubmit={submitRequest} />}
