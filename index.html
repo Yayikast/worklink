@@ -327,9 +327,10 @@ function StatusBadge({ status }) {
   return <Badge className={styles}>{status}</Badge>;
 }
 
-function MyServiceCard({ item }) {
+function MyServiceCard({ item, onClick }) {
   return (
-    <div className="fade-in bg-white rounded-2xl border border-slate-100 p-5 flex flex-col gap-3">
+    <button onClick={() => onClick(item)}
+      className="fade-in text-left bg-white rounded-2xl border border-slate-100 p-5 flex flex-col gap-3 hover:border-blue-300 hover:shadow-lg hover:shadow-slate-200/60 hover:-translate-y-0.5 transition">
       <div className="flex items-start justify-between gap-2">
         <h3 className="font-bold text-slate-900 leading-snug">{item.title}</h3>
         <StatusBadge status={item.status} />
@@ -338,13 +339,15 @@ function MyServiceCard({ item }) {
         <CategoryBadge category={item.category} />
         <Badge className="bg-blue-50 text-blue-700">{item.price}</Badge>
       </div>
-    </div>
+      <span className="text-xs font-semibold text-blue-600">Click to edit →</span>
+    </button>
   );
 }
 
-function MyRequestCard({ item }) {
+function MyRequestCard({ item, onClick }) {
   return (
-    <div className="fade-in bg-white rounded-2xl border border-slate-100 p-5 flex flex-col gap-3">
+    <button onClick={() => onClick(item)}
+      className="fade-in text-left bg-white rounded-2xl border border-slate-100 p-5 flex flex-col gap-3 hover:border-blue-300 hover:shadow-lg hover:shadow-slate-200/60 hover:-translate-y-0.5 transition">
       <div className="flex items-start justify-between gap-2">
         <h3 className="font-bold text-slate-900 leading-snug">{item.title}</h3>
         <StatusBadge status={item.status} />
@@ -354,13 +357,41 @@ function MyRequestCard({ item }) {
         <Badge className="bg-emerald-50 text-emerald-700">Budget: {item.budget}</Badge>
       </div>
       <p className="text-xs text-slate-400">Deadline: {item.deadline}</p>
-    </div>
+      <span className="text-xs font-semibold text-blue-600">Click to edit →</span>
+    </button>
   );
 }
 
-function ProfilePage({ services, requests }) {
+function ChatHistoryCard({ entry, onOpen }) {
+  const { item, messages, matched } = entry;
+  const lastMessage = messages[messages.length - 1];
+  return (
+    <button onClick={() => onOpen(item)}
+      className="fade-in text-left bg-white rounded-2xl border border-slate-100 p-5 flex flex-col gap-2 hover:border-blue-300 hover:shadow-lg hover:shadow-slate-200/60 hover:-translate-y-0.5 transition">
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex items-center gap-2 min-w-0">
+          <Avatar name={item.name} size="w-8 h-8 text-xs" />
+          <div className="min-w-0">
+            <p className="font-bold text-sm truncate">{item.title}</p>
+            <p className="text-xs text-slate-400">with {item.name}</p>
+          </div>
+        </div>
+        {matched ? <StatusBadge status="Matched" /> : <CategoryBadge category={item.category} />}
+      </div>
+      {lastMessage && (
+        <p className="text-sm text-slate-500 line-clamp-1">
+          <span className="font-semibold text-slate-600">{lastMessage.from === "me" ? "You: " : ""}</span>
+          {lastMessage.text}
+        </p>
+      )}
+    </button>
+  );
+}
+
+function ProfilePage({ services, requests, chats, onEditService, onEditRequest, onOpenChat }) {
   const myServices = services.filter(s => s.name === CURRENT_USER.name);
   const myRequests = requests.filter(r => r.name === CURRENT_USER.name);
+  const chatEntries = Object.values(chats);
 
   return (
     <div className="fade-in max-w-6xl mx-auto px-5 py-10">
@@ -381,7 +412,7 @@ function ProfilePage({ services, requests }) {
           <EmptyState text="You haven't posted any services yet." />
         ) : (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {myServices.map(s => <MyServiceCard key={s.id} item={s} />)}
+            {myServices.map(s => <MyServiceCard key={s.id} item={s} onClick={onEditService} />)}
           </div>
         )}
       </div>
@@ -392,7 +423,18 @@ function ProfilePage({ services, requests }) {
           <EmptyState text="You haven't posted any help requests yet." />
         ) : (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {myRequests.map(r => <MyRequestCard key={r.id} item={r} />)}
+            {myRequests.map(r => <MyRequestCard key={r.id} item={r} onClick={onEditRequest} />)}
+          </div>
+        )}
+      </div>
+
+      <div className="mt-10">
+        <h2 className="font-bold text-lg mb-4">Chat History</h2>
+        {chatEntries.length === 0 ? (
+          <EmptyState text="No conversations yet. Start a chat from any service or help request." />
+        ) : (
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {chatEntries.map(entry => <ChatHistoryCard key={entry.item.id} entry={entry} onOpen={onOpenChat} />)}
           </div>
         )}
       </div>
@@ -485,6 +527,57 @@ function RequestForm({ onClose, onSubmit }) {
   );
 }
 
+function EditServiceForm({ item, onClose, onSave }) {
+  const [form, setForm] = useState({ title: item.title, category: item.category, description: item.description, price: item.price });
+  const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
+  const valid = form.title && form.description && form.price;
+  return (
+    <Modal onClose={onClose} title="Edit Service" subtitle={item.title}>
+      <form onSubmit={e => { e.preventDefault(); if (valid) onSave(item.id, form); }} className="space-y-4">
+        <Field label="Title"><input required value={form.title} onChange={set("title")} className={inputCls} /></Field>
+        <Field label="Category">
+          <select value={form.category} onChange={set("category")} className={inputCls}>
+            {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+          </select>
+        </Field>
+        <Field label="Description"><textarea required value={form.description} onChange={set("description")} rows="3" className={inputCls} /></Field>
+        <Field label="Price"><input required value={form.price} onChange={set("price")} className={inputCls} /></Field>
+        <div className="flex gap-3 pt-2">
+          <GhostButton onClick={onClose} className="flex-1">Cancel</GhostButton>
+          <PrimaryButton type="submit" className="flex-1">Save Changes</PrimaryButton>
+        </div>
+      </form>
+    </Modal>
+  );
+}
+
+function EditRequestForm({ item, onClose, onSave }) {
+  const [form, setForm] = useState({ title: item.title, category: item.category, description: item.description, budget: item.budget, deadline: item.deadline });
+  const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
+  const valid = form.title && form.description && form.budget && form.deadline;
+  return (
+    <Modal onClose={onClose} title="Edit Help Request" subtitle={item.title}>
+      <form onSubmit={e => { e.preventDefault(); if (valid) onSave(item.id, form); }} className="space-y-4">
+        <Field label="Title"><input required value={form.title} onChange={set("title")} className={inputCls} /></Field>
+        <Field label="Category">
+          <select value={form.category} onChange={set("category")} className={inputCls}>
+            {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+          </select>
+        </Field>
+        <Field label="Description"><textarea required value={form.description} onChange={set("description")} rows="3" className={inputCls} /></Field>
+        <div className="grid grid-cols-2 gap-4">
+          <Field label="Budget"><input required value={form.budget} onChange={set("budget")} className={inputCls} /></Field>
+          <Field label="Deadline"><input required value={form.deadline} onChange={set("deadline")} className={inputCls} /></Field>
+        </div>
+        <div className="flex gap-3 pt-2">
+          <GhostButton onClick={onClose} className="flex-1">Cancel</GhostButton>
+          <PrimaryButton type="submit" className="flex-1">Save Changes</PrimaryButton>
+        </div>
+      </form>
+    </Modal>
+  );
+}
+
 function Modal({ children, onClose, title, subtitle }) {
   return (
     <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
@@ -504,15 +597,15 @@ function Modal({ children, onClose, title, subtitle }) {
 
 /* ---------------- Detail + Chat ---------------- */
 
-function DetailView({ item, onClose, onMatched }) {
+function DetailView({ item, chatEntry, onUpdateChat, onClose, onMatched }) {
   const isService = item.type === "service";
-  const [messages, setMessages] = useState([
+  const [messages, setMessages] = useState(chatEntry ? chatEntry.messages : [
     { from: "them", text: isService
         ? `Hi! Thanks for checking out my post. Feel free to ask me anything about "${item.title}".`
         : `Hi! This is about "${item.title}". Let me know if you have questions before we get started.` },
   ]);
   const [draft, setDraft] = useState("");
-  const [matched, setMatched] = useState(false);
+  const [matched, setMatched] = useState(chatEntry ? chatEntry.matched : false);
   const scrollRef = useRef(null);
 
   useEffect(() => {
@@ -521,15 +614,22 @@ function DetailView({ item, onClose, onMatched }) {
 
   const send = () => {
     if (!draft.trim()) return;
-    setMessages(m => [...m, { from: "me", text: draft.trim() }]);
+    const withMe = [...messages, { from: "me", text: draft.trim() }];
+    setMessages(withMe);
+    onUpdateChat(item, withMe, matched);
     setDraft("");
     setTimeout(() => {
-      setMessages(m => [...m, { from: "them", text: "Sounds good, let's figure out the details 🙂" }]);
+      setMessages(m => {
+        const withReply = [...m, { from: "them", text: "Sounds good, let's figure out the details 🙂" }];
+        onUpdateChat(item, withReply, matched);
+        return withReply;
+      });
     }, 700);
   };
 
   const handleMatch = () => {
     setMatched(true);
+    onUpdateChat(item, messages, true);
     onMatched && onMatched();
   };
 
@@ -600,6 +700,8 @@ function App() {
   const [detailItem, setDetailItem] = useState(null);
   const [showChooser, setShowChooser] = useState(false);
   const [formType, setFormType] = useState(null); // 'service' | 'request'
+  const [editTarget, setEditTarget] = useState(null); // { type: 'service'|'request', item }
+  const [chats, setChats] = useState({}); // id -> { item, messages, matched }
 
   const openDetail = (item) => setDetailItem(item);
   const closeDetail = () => setDetailItem(null);
@@ -622,6 +724,24 @@ function App() {
     setPage("requests");
   };
 
+  const openEditService = (item) => setEditTarget({ type: "service", item });
+  const openEditRequest = (item) => setEditTarget({ type: "request", item });
+  const closeEdit = () => setEditTarget(null);
+
+  const saveService = (id, form) => {
+    setServices(s => s.map(x => (x.id === id ? { ...x, ...form } : x)));
+    closeEdit();
+  };
+
+  const saveRequest = (id, form) => {
+    setRequests(r => r.map(x => (x.id === id ? { ...x, ...form } : x)));
+    closeEdit();
+  };
+
+  const updateChat = (item, messages, matched) => {
+    setChats(prev => ({ ...prev, [item.id]: { item, messages, matched } }));
+  };
+
   return (
     <div>
       <Navbar page={page} setPage={setPage} onPost={openPost} />
@@ -629,12 +749,30 @@ function App() {
       {page === "home" && <Home setPage={setPage} services={services} requests={requests} openDetail={openDetail} />}
       {page === "services" && <ServicesPage services={services} openDetail={openDetail} />}
       {page === "requests" && <RequestsPage requests={requests} openDetail={openDetail} />}
-      {page === "profile" && <ProfilePage services={services} requests={requests} />}
+      {page === "profile" && (
+        <ProfilePage
+          services={services}
+          requests={requests}
+          chats={chats}
+          onEditService={openEditService}
+          onEditRequest={openEditRequest}
+          onOpenChat={openDetail}
+        />
+      )}
 
-      {detailItem && <DetailView item={detailItem} onClose={closeDetail} />}
+      {detailItem && (
+        <DetailView
+          item={detailItem}
+          chatEntry={chats[detailItem.id]}
+          onUpdateChat={updateChat}
+          onClose={closeDetail}
+        />
+      )}
       {showChooser && <PostChooser onClose={closePostFlow} onChoose={chooseType} />}
       {formType === "service" && <ServiceForm onClose={closePostFlow} onSubmit={submitService} />}
       {formType === "request" && <RequestForm onClose={closePostFlow} onSubmit={submitRequest} />}
+      {editTarget?.type === "service" && <EditServiceForm item={editTarget.item} onClose={closeEdit} onSave={saveService} />}
+      {editTarget?.type === "request" && <EditRequestForm item={editTarget.item} onClose={closeEdit} onSave={saveRequest} />}
 
       <footer className="text-center text-xs text-slate-400 py-10">
         WORKLINK SIIT · Built for SIIT students, by SIIT students.
