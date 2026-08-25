@@ -9,799 +9,217 @@
 <script crossorigin src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
 <script src="https://unpkg.com/@babel/standalone@7.24.7/babel.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-  * { font-family: 'Plus Jakarta Sans', sans-serif; }
-  body { background: #F7F8FB; }
+  :root {
+    --background: oklch(99% .005 95);
+    --foreground: oklch(15% .02 260);
+    --primary: oklch(55% .18 250);
+    --primary-foreground: oklch(100% 0 0);
+    --secondary: oklch(95% .02 250);
+    --secondary-foreground: oklch(15% .02 260);
+    --muted: oklch(96% .01 250);
+    --muted-foreground: oklch(55% .04 260);
+    --card: oklch(100% 0 0);
+    --card-foreground: oklch(15% .02 260);
+    --border: oklch(90% .01 250);
+    --ring: oklch(55% .18 250);
+    --star: oklch(79% .17 70);
+    --tint-10: color-mix(in oklch, var(--primary) 10%, transparent);
+    --tint-20: color-mix(in oklch, var(--primary) 20%, var(--border));
+    --overlay-90: color-mix(in oklch, white 90%, transparent);
+    --overlay-40: color-mix(in oklch, white 40%, transparent);
+    --overlay-10: color-mix(in oklch, white 10%, transparent);
+    --primary-fg-80: color-mix(in oklch, var(--primary-foreground) 80%, transparent);
+    --secondary-hover: color-mix(in oklch, var(--secondary) 70%, var(--muted));
+  }
+  * { font-family: 'Inter', system-ui, -apple-system, sans-serif; box-sizing: border-box; }
+  body { background: var(--background); color: var(--foreground); margin: 0; }
   ::-webkit-scrollbar { width: 8px; height: 8px; }
-  ::-webkit-scrollbar-thumb { background: #E2E5EC; border-radius: 8px; }
-  .fade-in { animation: fadeIn .35s ease both; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 8px; }
+  .fade-in { animation: fadeIn .3s ease both; }
   @keyframes fadeIn { from { opacity: 0; transform: translateY(6px);} to { opacity: 1; transform: translateY(0);} }
-  .pop-in { animation: popIn .4s cubic-bezier(.34,1.56,.64,1) both; }
-  @keyframes popIn { from { opacity: 0; transform: scale(.85);} to { opacity: 1; transform: scale(1);} }
+
+  .nav-link { padding:.375rem .75rem; border-radius:999px; font-size:.875rem; font-weight:500; color:var(--muted-foreground); transition:.15s; text-decoration:none; }
+  .nav-link:hover { background:var(--secondary); color:var(--foreground); }
+  .nav-link.active { background:var(--secondary); color:var(--foreground); font-weight:600; }
+  .nav-post { margin-left:.25rem; display:inline-flex; align-items:center; gap:.4rem; border-radius:999px; padding:.55rem 1.1rem; font-size:.875rem; font-weight:600; background:var(--primary); color:var(--primary-foreground); box-shadow:0 1px 2px oklch(15% .02 260 / .06); transition:.15s; text-decoration:none; }
+  .nav-post:hover { filter:brightness(1.08); }
+
+  .btn { display:inline-flex; align-items:center; justify-content:center; gap:.45rem; border-radius:999px; font-weight:600; font-size:.875rem; padding:.7rem 1.4rem; transition:.15s; cursor:pointer; border:1px solid transparent; white-space:nowrap; text-decoration:none; }
+  .btn:disabled { opacity:.5; cursor:not-allowed; }
+  .btn-primary { background:var(--primary); color:var(--primary-foreground); box-shadow:0 1px 2px oklch(15% .02 260 / .06); }
+  .btn-primary:hover:not(:disabled) { filter:brightness(1.08); }
+  .btn-outline { background:transparent; color:var(--foreground); border-color:var(--border); }
+  .btn-outline:hover:not(:disabled) { background:var(--secondary); }
+  .btn-white { background:white; color:var(--primary); }
+  .btn-white:hover { background:var(--overlay-90); }
+  .btn-outline-light { background:transparent; color:var(--primary-foreground); border-color:var(--overlay-40); }
+  .btn-outline-light:hover { background:var(--overlay-10); }
+  .btn-block { width:100%; }
+  .btn-icon { padding:0; width:2.5rem; height:2.5rem; border-radius:.75rem; flex-shrink:0; }
+
+  .pill { padding:.55rem 1.1rem; border-radius:999px; font-size:.875rem; font-weight:500; background:var(--secondary); color:var(--secondary-foreground); white-space:nowrap; cursor:pointer; border:none; transition:.15s; }
+  .pill:hover { background:var(--secondary-hover); }
+  .pill.active { background:var(--primary); color:var(--primary-foreground); }
+
+  .card-link, .card-static { display:flex; flex-direction:column; background:var(--card); border:1px solid var(--border); border-radius:1rem; padding:1.25rem; box-shadow:0 1px 2px oklch(15% .02 260 / .04); transition:.18s; text-decoration:none; color:inherit; }
+  .card-link:hover { transform:translateY(-4px); border-color:var(--tint-20); box-shadow:0 10px 24px -12px oklch(15% .02 260 / .15); }
+  .card-link:hover .card-title { color:var(--primary); }
+
+  .search-bar { display:flex; align-items:center; gap:.75rem; border-radius:999px; border:1px solid var(--border); background:var(--card); padding:.75rem 1.1rem; box-shadow:0 1px 2px oklch(15% .02 260 / .04); }
+  .search-bar input { flex:1; background:transparent; border:none; outline:none; font-size:.875rem; color:var(--foreground); font-family:inherit; }
+  .search-bar input::placeholder { color:var(--muted-foreground); }
+
+  .badge { display:inline-flex; align-items:center; padding:.28rem .7rem; border-radius:999px; font-size:.72rem; font-weight:500; white-space:nowrap; background:var(--secondary); color:var(--secondary-foreground); }
+
+  .icon-tile { display:flex; align-items:center; justify-content:center; border-radius:.75rem; background:var(--tint-10); color:var(--primary); flex-shrink:0; }
+
+  .field-label { font-size:.875rem; font-weight:500; color:var(--foreground); display:flex; align-items:center; gap:.5rem; margin-bottom:.4rem; }
+  .field-label svg { color:var(--primary); }
+  .field-input, .field-textarea, .field-select { width:100%; border:1px solid var(--border); border-radius:.75rem; padding:.75rem 1rem; font-size:.875rem; background:var(--background); color:var(--foreground); font-family:inherit; }
+  .field-input:focus, .field-textarea:focus, .field-select:focus { outline:2px solid var(--ring); outline-offset:1px; }
+  .field-textarea { resize:vertical; min-height:7rem; }
+
+  .chat-bubble-them { background:var(--secondary); color:var(--secondary-foreground); }
+  .chat-bubble-me { background:var(--primary); color:var(--primary-foreground); }
+
+  .stat-tile { border-radius:.75rem; padding:1rem; background:var(--secondary); }
+  .muted { color:var(--muted-foreground); }
 </style>
 </head>
-<body class="min-h-screen text-slate-900">
+<body>
 <div id="root"></div>
 
 <script type="text/babel" data-presets="react">
 const { useState, useMemo, useRef, useEffect } = React;
 
-/* ---------------- Mock Data ---------------- */
+/* ---------------- Icons (Lucide, ISC licensed) ---------------- */
 
-const CATEGORIES = ["Coding", "Design", "Writing", "Tutoring", "Photography", "Excel/Data"];
+const iconBase = { xmlns: "http://www.w3.org/2000/svg", width: 24, height: 24, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 2, strokeLinecap: "round", strokeLinejoin: "round", "aria-hidden": "true" };
 
-const AVATAR_COLORS = ["bg-blue-100 text-blue-700","bg-violet-100 text-violet-700","bg-emerald-100 text-emerald-700","bg-amber-100 text-amber-700","bg-rose-100 text-rose-700","bg-cyan-100 text-cyan-700"];
+function ArrowLeftIcon({ className }) { return <svg {...iconBase} className={className}><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>; }
+function SearchIcon({ className }) { return <svg {...iconBase} className={className}><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>; }
+function StarIcon({ className }) { return <svg {...iconBase} fill="var(--star)" stroke="var(--star)" className={className}><path d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"/></svg>; }
+function PlusIcon({ className }) { return <svg {...iconBase} className={className}><path d="M5 12h14"/><path d="M12 5v14"/></svg>; }
+function HandHelpingIcon({ className }) { return <svg {...iconBase} className={className}><path d="M11 12h2a2 2 0 1 0 0-4h-3c-.6 0-1.1.2-1.4.6L3 14"/><path d="m7 18 1.6-1.4c.3-.4.8-.6 1.4-.6h4c1.1 0 2.1-.4 2.8-1.2l4.6-4.4a2 2 0 0 0-2.75-2.91l-4.2 3.9"/><path d="m2 13 6 6"/></svg>; }
+function HelpCircleIcon({ className }) { return <svg {...iconBase} className={className}><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>; }
+function MessageSquareIcon({ className }) { return <svg {...iconBase} className={className}><path d="M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z"/></svg>; }
+function ListIcon({ className }) { return <svg {...iconBase} className={className}><path d="M3 5h.01"/><path d="M3 12h.01"/><path d="M3 19h.01"/><path d="M8 5h13"/><path d="M8 12h13"/><path d="M8 19h13"/></svg>; }
+function FileTextIcon({ className }) { return <svg {...iconBase} className={className}><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z"/><path d="M14 2v5a1 1 0 0 0 1 1h5"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>; }
+function WalletIcon({ className }) { return <svg {...iconBase} className={className}><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"/><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/></svg>; }
+function CalendarIcon({ className }) { return <svg {...iconBase} className={className}><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/><path d="M16 18h.01"/></svg>; }
+function SendIcon({ className }) { return <svg {...iconBase} className={className}><path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"/><path d="m21.854 2.147-10.94 10.939"/></svg>; }
+function UserIcon({ className }) { return <svg {...iconBase} className={className}><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>; }
+function CheckIcon({ className }) { return <svg {...iconBase} className={className}><path d="M20 6 9 17l-5-5"/></svg>; }
 
-function initials(name) {
-  return name.split(" ").map(w => w[0]).join("").slice(0,2).toUpperCase();
+/* ---------------- Data ---------------- */
+
+const CATEGORIES = ["Programming & Tech", "Design", "Tutoring", "Language & Writing", "Event & Creative"];
+
+const SERVICES = [
+  { slug: "python-debugging", name: "Alex T.", initials: "AT", category: "Programming & Tech", title: "Python Debugging", description: "Stuck on a bug or failing test? I can help you debug Python code, explain errors, and get your assignment running smoothly.", price: "฿150–250", rating: 4.9, reviews: 24 },
+  { slug: "figma-ui-design", name: "Mina K.", initials: "MK", category: "Design", title: "Figma UI Design", description: "Need a clean UI for your project or prototype? I design screens, components, and user flows in Figma for web and mobile apps.", price: "฿200–500", rating: 4.8, reviews: 31 },
+  { slug: "english-proofreading", name: "Ploy S.", initials: "PS", category: "Language & Writing", title: "English Proofreading", description: "Polish your reports, essays, and presentations. I fix grammar, clarity, and tone while keeping your voice intact.", price: "฿100–200", rating: 5.0, reviews: 17 },
+  { slug: "event-photography", name: "Mark C.", initials: "MC", category: "Event & Creative", title: "Event Photography", description: "Capture your club event, graduation shoot, or project showcase. I bring a camera, edit the best shots, and deliver them fast.", price: "฿500+", rating: 4.9, reviews: 12 },
+  { slug: "excel-help", name: "Beam P.", initials: "BP", category: "Programming & Tech", title: "Excel Help", description: "From formulas and pivot tables to charts and dashboards, I can make your spreadsheet do the work for you.", price: "฿100–300", rating: 4.8, reviews: 19 },
+  { slug: "calculus-tutoring", name: "Nicha R.", initials: "NR", category: "Tutoring", title: "Calculus Tutoring", description: "One-on-one sessions to help you prepare for midterms, solve problem sets, and actually understand the concepts.", price: "฿250–350", rating: 4.9, reviews: 28 },
+];
+
+const REQUESTS = [
+  { slug: "python-tonight", name: "Nut A.", initials: "NA", category: "Programming & Tech", title: "Need help debugging Python tonight", description: "My data structures assignment throws an index error I can't trace. Looking for someone to hop on a call for ~1 hour tonight and walk through it with me.", budget: "฿200", deadline: "Tonight, 9 PM" },
+  { slug: "poster-design", name: "Praew J.", initials: "PJ", category: "Design", title: "Looking for someone to design a poster", description: "Our club is running an open house next week and we need one A3 poster plus an Instagram version. Simple, clean, with our logo and event details.", budget: "฿350", deadline: "Fri, this week" },
+  { slug: "presentation-proofread", name: "Boss S.", initials: "BS", category: "Language & Writing", title: "Need an English presentation proofread", description: "12 slides for a business communication class. I need grammar fixes and help making the wording sound natural before I rehearse.", budget: "฿150", deadline: "Thu, 6 PM" },
+  { slug: "event-photographer", name: "Fern K.", initials: "FK", category: "Event & Creative", title: "Looking for an event photographer", description: "Engineering night this Saturday, roughly 3 hours of coverage. Need edited photos delivered within a few days for our social pages.", budget: "฿600", deadline: "Sat, this week" },
+  { slug: "excel-dashboard", name: "Ton P.", initials: "TP", category: "Programming & Tech", title: "Need an Excel dashboard for my project data", description: "I have survey results in a messy sheet. I want pivot tables and a couple of charts I can drop into my report.", budget: "฿250", deadline: "Next Mon" },
+  { slug: "calculus-cram", name: "Mild R.", initials: "MR", category: "Tutoring", title: "Looking for a calculus tutor before midterm", description: "Two sessions on integration techniques and series. I learn best by working through past exam problems together.", budget: "฿300/hr", deadline: "Sun, this week" },
+];
+
+/* ---------------- Router ---------------- */
+
+function useRouter() {
+  const [path, setPath] = useState(window.location.pathname || "/");
+  useEffect(() => {
+    const onPop = () => setPath(window.location.pathname || "/");
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, []);
+  const nav = (to) => {
+    if (to !== window.location.pathname) {
+      window.history.pushState({}, "", to);
+      setPath(to);
+    }
+    window.scrollTo({ top: 0, behavior: "instant" });
+  };
+  return [path, nav];
 }
 
-function Avatar({ name, size = "w-10 h-10 text-sm" }) {
-  const idx = name.charCodeAt(0) % AVATAR_COLORS.length;
+function Link({ to, nav, className, children }) {
   return (
-    <div className={`${size} ${AVATAR_COLORS[idx]} rounded-full flex items-center justify-center font-bold shrink-0`}>
-      {initials(name)}
-    </div>
+    <a href={to} className={className} onClick={(e) => { e.preventDefault(); nav(to); }}>
+      {children}
+    </a>
   );
 }
-
-const CURRENT_USER = {
-  name: "You",
-  program: "Digital Business, Year 2",
-  rating: 4.8,
-  reviews: 6,
-};
-
-const INITIAL_SERVICES = [
-  { id: "s1", type: "service", name: "Ploy Suwannarat", title: "Python Debugging & Homework Help", category: "Coding", description: "I can help you debug Python assignments, fix errors, and explain concepts clearly. 2nd year DSI student.", price: "150 THB/hr", rating: 4.9, reviews: 21, status: "Active" },
-  { id: "s2", type: "service", name: "Nut Chaiyaporn", title: "Figma UI/UX Design", category: "Design", description: "Clean, modern Figma designs for posters, apps, and presentations. Fast turnaround, portfolio available.", price: "300 THB/project", rating: 5.0, reviews: 14, status: "Active" },
-  { id: "s3", type: "service", name: "Fah Kittipong", title: "English Proofreading & Editing", category: "Writing", description: "Native-level English editing for essays, reports, and presentations. Grammar, tone, and clarity fixes.", price: "80 THB/page", rating: 4.8, reviews: 33, status: "Active" },
-  { id: "s4", type: "service", name: "Beam Anurak", title: "Calculus & Linear Algebra Tutoring", category: "Tutoring", description: "1-on-1 tutoring sessions for ICT math courses. I explain step by step until it clicks.", price: "200 THB/hr", rating: 4.9, reviews: 18, status: "Active" },
-  { id: "s5", type: "service", name: "Ice Napassorn", title: "Event & Portrait Photography", category: "Photography", description: "I shoot campus events, portraits, and product photos. Includes basic editing and same-week delivery.", price: "500 THB/session", rating: 5.0, reviews: 9, status: "Active" },
-  { id: "s6", type: "service", name: "Bank Thanapat", title: "Excel & Data Analysis Help", category: "Excel/Data", description: "Formulas, pivot tables, dashboards, and cleaning messy datasets for your reports and thesis work.", price: "120 THB/hr", rating: 4.7, reviews: 12, status: "Active" },
-  { id: "s7", type: "service", name: "You", title: "Canva & Social Media Graphics", category: "Design", description: "I design Instagram posts, banners, and simple branding assets for club events and projects.", price: "100 THB/design", rating: 5.0, reviews: 3, status: "Active" },
-];
-
-const INITIAL_REQUESTS = [
-  { id: "r1", type: "request", name: "Gap Sirinya", title: "Need help debugging a Python script", category: "Coding", description: "My sorting algorithm assignment keeps throwing an IndexError and I can't figure out why. Need it fixed before Friday.", budget: "100 THB", deadline: "Aug 21, 2026", status: "Open" },
-  { id: "r2", type: "request", name: "Two Ratchanon", title: "Looking for someone to design a poster", category: "Design", description: "Need an A2 poster for our club's open house event. Have the content ready, just need it designed nicely.", budget: "250 THB", deadline: "Aug 25, 2026", status: "Open" },
-  { id: "r3", type: "request", name: "Mind Pattarapon", title: "Need an English presentation proofread", category: "Writing", description: "10-slide presentation for my capstone review. Just need grammar and phrasing checked before Monday.", budget: "150 THB", deadline: "Aug 24, 2026", status: "Open" },
-  { id: "r4", type: "request", name: "Aim Warisara", title: "Need a tutor for Statistics midterm", category: "Tutoring", description: "Struggling with hypothesis testing and regression. Looking for 2 sessions before the exam.", budget: "350 THB", deadline: "Aug 28, 2026", status: "Open" },
-  { id: "r5", type: "request", name: "Job Kittisak", title: "Need product photos for a small shop", category: "Photography", description: "About 15 products to shoot with a plain background, need them by next week.", budget: "400 THB", deadline: "Aug 27, 2026", status: "Open" },
-  { id: "r6", type: "request", name: "Fern Chayapa", title: "Need help building an Excel dashboard", category: "Excel/Data", description: "Have raw survey data and need it turned into charts and a summary dashboard for a group project.", budget: "200 THB", deadline: "Aug 23, 2026", status: "Open" },
-  { id: "r7", type: "request", name: "You", title: "Need a tutor for Financial Accounting", category: "Tutoring", description: "Struggling with journal entries and adjusting entries before the quiz. Looking for one session this week.", budget: "150 THB", deadline: "Aug 22, 2026", status: "Open" },
-];
 
 /* ---------------- Small UI atoms ---------------- */
 
-function Badge({ children, className = "" }) {
-  return <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${className}`}>{children}</span>;
-}
-
-function CategoryBadge({ category }) {
-  return <Badge className="bg-slate-100 text-slate-600">{category}</Badge>;
-}
-
-function StarRating({ rating, reviews }) {
+function Avatar({ initials, size, radius = "full", tone = "tint" }) {
+  const radiusMap = { full: "9999px", xl: ".75rem", "2xl": "1rem" };
+  const toneMap = {
+    tint: { background: "var(--tint-10)", color: "var(--primary)" },
+    solid: { background: "var(--primary)", color: "var(--primary-foreground)" },
+    muted: { background: "var(--muted)", color: "var(--muted-foreground)" },
+  };
   return (
-    <div className="flex items-center gap-1 text-sm text-slate-500">
-      <span className="text-amber-500">★</span>
-      <span className="font-semibold text-slate-700">{rating}</span>
-      <span>({reviews})</span>
+    <div className="flex items-center justify-center font-bold shrink-0" style={{ width: size, height: size, borderRadius: radiusMap[radius], fontSize: size * 0.32, ...toneMap[tone] }}>
+      {initials}
     </div>
   );
 }
 
-function PrimaryButton({ children, onClick, className = "", type = "button", disabled = false }) {
+function CategoryPills({ active, onChange }) {
   return (
-    <button type={type} onClick={onClick} disabled={disabled}
-      className={`bg-blue-600 hover:bg-blue-700 active:scale-[.98] transition text-white font-semibold rounded-xl px-5 py-2.5 shadow-sm shadow-blue-600/20 ${className}`}>
-      {children}
-    </button>
+    <React.Fragment>
+      <button className={`pill ${active === "All" ? "active" : ""}`} onClick={() => onChange("All")}>All</button>
+      {CATEGORIES.map(c => (
+        <button key={c} className={`pill ${active === c ? "active" : ""}`} onClick={() => onChange(c)}>{c}</button>
+      ))}
+    </React.Fragment>
   );
 }
 
-function GhostButton({ children, onClick, className = "" }) {
+function SearchBar({ value, onChange, placeholder }) {
   return (
-    <button onClick={onClick}
-      className={`bg-white hover:bg-slate-50 active:scale-[.98] transition text-slate-700 font-semibold rounded-xl px-5 py-2.5 border border-slate-200 ${className}`}>
-      {children}
-    </button>
-  );
-}
-
-/* ---------------- Navbar ---------------- */
-
-function Navbar({ page, setPage, onPost }) {
-  const [menuOpen, setMenuOpen] = useState(false);
-  const links = [
-    { key: "home", label: "Home" },
-    { key: "services", label: "Services" },
-    { key: "requests", label: "Help Requests" },
-    { key: "profile", label: "Profile" },
-  ];
-  const goTo = (key) => { setPage(key); setMenuOpen(false); };
-  return (
-    <div className="sticky top-0 z-30 bg-white/80 backdrop-blur border-b border-slate-100">
-      <div className="max-w-6xl mx-auto px-5 h-16 flex items-center justify-between">
-        <button onClick={() => goTo("home")} className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center font-extrabold text-sm">W</div>
-          <span className="font-extrabold text-lg tracking-tight">WORKLINK <span className="text-blue-600">SIIT</span></span>
-        </button>
-        <div className="hidden md:flex items-center gap-1">
-          {links.map(l => (
-            <button key={l.key} onClick={() => goTo(l.key)}
-              className={`px-4 py-2 rounded-lg text-sm font-semibold transition ${page === l.key ? "bg-blue-50 text-blue-700" : "text-slate-500 hover:text-slate-800 hover:bg-slate-50"}`}>
-              {l.label}
-            </button>
-          ))}
-        </div>
-        <div className="flex items-center gap-2">
-          <PrimaryButton onClick={onPost} className="!px-4 !py-2 text-sm">+ Post</PrimaryButton>
-          <button onClick={() => setMenuOpen(o => !o)} aria-label="Toggle menu"
-            className="md:hidden w-10 h-10 rounded-lg border border-slate-200 flex items-center justify-center text-slate-600">
-            {menuOpen ? "✕" : "☰"}
-          </button>
-        </div>
-      </div>
-      {menuOpen && (
-        <div className="fade-in md:hidden border-t border-slate-100 bg-white px-5 py-3 flex flex-col gap-1">
-          {links.map(l => (
-            <button key={l.key} onClick={() => goTo(l.key)}
-              className={`text-left px-4 py-2.5 rounded-lg text-sm font-semibold transition ${page === l.key ? "bg-blue-50 text-blue-700" : "text-slate-600 hover:bg-slate-50"}`}>
-              {l.label}
-            </button>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-/* ---------------- Cards ---------------- */
-
-function MatchedRibbon() {
-  return (
-    <div className="flex items-center gap-1 text-xs font-bold text-violet-700 bg-violet-50 px-2.5 py-1 rounded-full">
-      <span>🎉</span> Matched
-    </div>
-  );
-}
-
-function ServiceCard({ item, onView, matched }) {
-  return (
-    <div className="fade-in bg-white rounded-2xl border border-slate-100 p-5 flex flex-col gap-3 hover:shadow-lg hover:shadow-slate-200/60 hover:-translate-y-0.5 transition">
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-3 min-w-0">
-          <Avatar name={item.name} />
-          <div className="min-w-0">
-            <p className="font-semibold text-sm truncate">{item.name}</p>
-            <StarRating rating={item.rating} reviews={item.reviews} />
-          </div>
-        </div>
-        {matched && <MatchedRibbon />}
-      </div>
-      <div>
-        <h3 className="font-bold text-slate-900 leading-snug">{item.title}</h3>
-        <p className="text-sm text-slate-500 mt-1 line-clamp-2">{item.description}</p>
-      </div>
-      <div className="flex items-center gap-2 flex-wrap">
-        <CategoryBadge category={item.category} />
-        <Badge className="bg-blue-50 text-blue-700">{item.price}</Badge>
-      </div>
-      <PrimaryButton onClick={() => onView(item)} className="w-full mt-1 text-sm">
-        {matched ? "Continue Chat" : "View"}
-      </PrimaryButton>
-    </div>
-  );
-}
-
-function RequestCard({ item, onView, matched }) {
-  return (
-    <div className="fade-in bg-white rounded-2xl border border-slate-100 p-5 flex flex-col gap-3 hover:shadow-lg hover:shadow-slate-200/60 hover:-translate-y-0.5 transition">
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-3 min-w-0">
-          <Avatar name={item.name} />
-          <div className="min-w-0">
-            <p className="font-semibold text-sm truncate">{item.name}</p>
-            <p className="text-xs text-slate-400">Deadline: {item.deadline}</p>
-          </div>
-        </div>
-        {matched && <MatchedRibbon />}
-      </div>
-      <div>
-        <h3 className="font-bold text-slate-900 leading-snug">{item.title}</h3>
-        <p className="text-sm text-slate-500 mt-1 line-clamp-2">{item.description}</p>
-      </div>
-      <div className="flex items-center gap-2 flex-wrap">
-        <CategoryBadge category={item.category} />
-        <Badge className="bg-emerald-50 text-emerald-700">Budget: {item.budget}</Badge>
-      </div>
-      <GhostButton onClick={() => onView(item)} className="w-full mt-1 text-sm !border-blue-200 !text-blue-700">
-        {matched ? "Continue Chat" : "View"}
-      </GhostButton>
-    </div>
-  );
-}
-
-/* ---------------- Search + Filter bar ---------------- */
-
-function FilterBar({ query, setQuery, category, setCategory, placeholder }) {
-  return (
-    <div className="flex flex-col sm:flex-row gap-3 mb-6">
-      <div className="relative flex-1">
-        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">⌕</span>
-        <input value={query} onChange={e => setQuery(e.target.value)} placeholder={placeholder}
-          className="w-full bg-white border border-slate-200 rounded-xl pl-10 pr-9 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400" />
-        {query && (
-          <button type="button" onClick={() => setQuery("")} aria-label="Clear search"
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">✕</button>
-        )}
-      </div>
-      <select value={category} onChange={e => setCategory(e.target.value)}
-        className="bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400">
-        <option value="All">All categories</option>
-        {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-      </select>
-    </div>
-  );
-}
-
-/* ---------------- Home Page ---------------- */
-
-function Home({ setPage, services, requests, openDetail, chats }) {
-  return (
-    <div className="fade-in">
-      <div className="max-w-6xl mx-auto px-5 pt-16 pb-12 text-center">
-        <div className="inline-block mb-4 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-bold tracking-wide">
-          FOR SIIT STUDENTS, BY SIIT STUDENTS
-        </div>
-        <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-slate-900">
-          WORKLINK <span className="text-blue-600">SIIT</span>
-        </h1>
-        <p className="mt-4 text-lg md:text-xl font-semibold text-slate-700">
-          Help, from someone who gets it.
-        </p>
-        <p className="mt-3 max-w-xl mx-auto text-slate-500">
-          Tired of help requests getting buried in LINE groups? WORKLINK gives SIIT students one
-          dedicated place to connect students who need help with students who can help — coding,
-          design, tutoring, proofreading, photography, Excel, and more.
-        </p>
-        <div className="mt-8 flex items-center justify-center gap-3 flex-wrap">
-          <PrimaryButton onClick={() => setPage("services")} className="text-base">Browse Services</PrimaryButton>
-          <GhostButton onClick={() => setPage("requests")} className="text-base">Find Help</GhostButton>
-        </div>
-      </div>
-
-      <div className="max-w-6xl mx-auto px-5 pb-10">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="font-bold text-lg">Popular services</h2>
-          <button onClick={() => setPage("services")} className="text-sm font-semibold text-blue-600 hover:underline">See all →</button>
-        </div>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {services.slice(0, 3).map(s => <ServiceCard key={s.id} item={s} onView={openDetail} matched={!!chats[s.id]?.matched} />)}
-        </div>
-      </div>
-
-      <div className="max-w-6xl mx-auto px-5 pb-20">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="font-bold text-lg">Recent help requests</h2>
-          <button onClick={() => setPage("requests")} className="text-sm font-semibold text-blue-600 hover:underline">See all →</button>
-        </div>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {requests.slice(0, 3).map(r => <RequestCard key={r.id} item={r} onView={openDetail} matched={!!chats[r.id]?.matched} />)}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/* ---------------- Services / Requests list pages ---------------- */
-
-function ServicesPage({ services, openDetail, chats }) {
-  const [query, setQuery] = useState("");
-  const [category, setCategory] = useState("All");
-  const filtered = useMemo(() => services.filter(s =>
-    (category === "All" || s.category === category) &&
-    (s.title.toLowerCase().includes(query.toLowerCase()) || s.name.toLowerCase().includes(query.toLowerCase()) || s.description.toLowerCase().includes(query.toLowerCase()))
-  ), [services, query, category]);
-
-  return (
-    <div className="fade-in max-w-6xl mx-auto px-5 py-10">
-      <h1 className="text-2xl font-extrabold mb-1">Services</h1>
-      <p className="text-slate-500 mb-6">Students offering their skills — "I can help".</p>
-      <FilterBar query={query} setQuery={setQuery} category={category} setCategory={setCategory} placeholder="Search services, e.g. Python, Figma..." />
-      {filtered.length === 0 ? (
-        <EmptyState text="No services match your search." />
-      ) : (
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filtered.map(s => <ServiceCard key={s.id} item={s} onView={openDetail} matched={!!chats[s.id]?.matched} />)}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function RequestsPage({ requests, openDetail, chats }) {
-  const [query, setQuery] = useState("");
-  const [category, setCategory] = useState("All");
-  const filtered = useMemo(() => requests.filter(r =>
-    (category === "All" || r.category === category) &&
-    (r.title.toLowerCase().includes(query.toLowerCase()) || r.name.toLowerCase().includes(query.toLowerCase()) || r.description.toLowerCase().includes(query.toLowerCase()))
-  ), [requests, query, category]);
-
-  return (
-    <div className="fade-in max-w-6xl mx-auto px-5 py-10">
-      <h1 className="text-2xl font-extrabold mb-1">Help Requests</h1>
-      <p className="text-slate-500 mb-6">Students who need a hand — "I need help".</p>
-      <FilterBar query={query} setQuery={setQuery} category={category} setCategory={setCategory} placeholder="Search requests, e.g. proofreading, poster..." />
-      {filtered.length === 0 ? (
-        <EmptyState text="No help requests match your search." />
-      ) : (
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filtered.map(r => <RequestCard key={r.id} item={r} onView={openDetail} matched={!!chats[r.id]?.matched} />)}
-        </div>
-      )}
+    <div className="search-bar">
+      <SearchIcon className="h-5 w-5 muted" />
+      <input value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} />
     </div>
   );
 }
 
 function EmptyState({ text }) {
   return (
-    <div className="text-center py-20 text-slate-400">
-      <div className="text-3xl mb-2">🔍</div>
+    <div className="flex flex-col items-center gap-3 py-20 text-center muted">
+      <SearchIcon className="h-8 w-8" />
       <p>{text}</p>
     </div>
   );
 }
 
-/* ---------------- Profile ---------------- */
-
-function StatusBadge({ status }) {
-  const styles = status === "Matched"
-    ? "bg-violet-50 text-violet-700"
-    : (status === "Open" || status === "Active")
-      ? "bg-emerald-50 text-emerald-700"
-      : status === "Fulfilled"
-        ? "bg-blue-50 text-blue-700"
-        : "bg-slate-100 text-slate-500";
-  return <Badge className={styles}>{status}</Badge>;
-}
-
-function MyServiceCard({ item, onClick }) {
+function Field({ label, icon, children }) {
   return (
-    <button onClick={() => onClick(item)}
-      className="fade-in text-left bg-white rounded-2xl border border-slate-100 p-5 flex flex-col gap-3 hover:border-blue-300 hover:shadow-lg hover:shadow-slate-200/60 hover:-translate-y-0.5 transition">
-      <div className="flex items-start justify-between gap-2">
-        <h3 className="font-bold text-slate-900 leading-snug">{item.title}</h3>
-        <StatusBadge status={item.status} />
-      </div>
-      <div className="flex items-center gap-2 flex-wrap">
-        <CategoryBadge category={item.category} />
-        <Badge className="bg-blue-50 text-blue-700">{item.price}</Badge>
-      </div>
-      <span className="text-xs font-semibold text-blue-600">Click to edit →</span>
-    </button>
-  );
-}
-
-function MyRequestCard({ item, onClick }) {
-  return (
-    <button onClick={() => onClick(item)}
-      className="fade-in text-left bg-white rounded-2xl border border-slate-100 p-5 flex flex-col gap-3 hover:border-blue-300 hover:shadow-lg hover:shadow-slate-200/60 hover:-translate-y-0.5 transition">
-      <div className="flex items-start justify-between gap-2">
-        <h3 className="font-bold text-slate-900 leading-snug">{item.title}</h3>
-        <StatusBadge status={item.status} />
-      </div>
-      <div className="flex items-center gap-2 flex-wrap">
-        <CategoryBadge category={item.category} />
-        <Badge className="bg-emerald-50 text-emerald-700">Budget: {item.budget}</Badge>
-      </div>
-      <p className="text-xs text-slate-400">Deadline: {item.deadline}</p>
-      <span className="text-xs font-semibold text-blue-600">Click to edit →</span>
-    </button>
-  );
-}
-
-function ChatHistoryCard({ entry, onOpen }) {
-  const { item, messages, matched } = entry;
-  const lastMessage = messages[messages.length - 1];
-  return (
-    <button onClick={() => onOpen(item)}
-      className="fade-in text-left bg-white rounded-2xl border border-slate-100 p-5 flex flex-col gap-2 hover:border-blue-300 hover:shadow-lg hover:shadow-slate-200/60 hover:-translate-y-0.5 transition">
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex items-center gap-2 min-w-0">
-          <Avatar name={item.name} size="w-8 h-8 text-xs" />
-          <div className="min-w-0">
-            <p className="font-bold text-sm truncate">{item.title}</p>
-            <p className="text-xs text-slate-400">with {item.name}</p>
-          </div>
-        </div>
-        {matched ? <StatusBadge status="Matched" /> : <CategoryBadge category={item.category} />}
-      </div>
-      {lastMessage && (
-        <p className="text-sm text-slate-500 line-clamp-1">
-          <span className="font-semibold text-slate-600">{lastMessage.from === "me" ? "You: " : ""}</span>
-          {lastMessage.text}
-        </p>
-      )}
-    </button>
-  );
-}
-
-function ProfilePage({ services, requests, chats, onEditService, onEditRequest, onOpenChat }) {
-  const myServices = services.filter(s => s.name === CURRENT_USER.name);
-  const myRequests = requests.filter(r => r.name === CURRENT_USER.name);
-  const chatEntries = Object.values(chats);
-
-  return (
-    <div className="fade-in max-w-6xl mx-auto px-5 py-10">
-      <div className="bg-white rounded-2xl border border-slate-100 p-6 flex items-center gap-5 flex-wrap">
-        <Avatar name={CURRENT_USER.name} size="w-16 h-16 text-lg" />
-        <div>
-          <h1 className="text-xl font-extrabold">{CURRENT_USER.name}</h1>
-          <p className="text-sm text-slate-500">{CURRENT_USER.program}</p>
-          <div className="mt-1">
-            <StarRating rating={CURRENT_USER.rating} reviews={CURRENT_USER.reviews} />
-          </div>
-        </div>
-      </div>
-
-      <div className="mt-10">
-        <h2 className="font-bold text-lg mb-4">My Services</h2>
-        {myServices.length === 0 ? (
-          <EmptyState text="You haven't posted any services yet." />
-        ) : (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {myServices.map(s => <MyServiceCard key={s.id} item={s} onClick={onEditService} />)}
-          </div>
-        )}
-      </div>
-
-      <div className="mt-10">
-        <h2 className="font-bold text-lg mb-4">My Help Requests</h2>
-        {myRequests.length === 0 ? (
-          <EmptyState text="You haven't posted any help requests yet." />
-        ) : (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {myRequests.map(r => <MyRequestCard key={r.id} item={r} onClick={onEditRequest} />)}
-          </div>
-        )}
-      </div>
-
-      <div className="mt-10">
-        <h2 className="font-bold text-lg mb-4">Chat History</h2>
-        {chatEntries.length === 0 ? (
-          <EmptyState text="No conversations yet. Start a chat from any service or help request." />
-        ) : (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {chatEntries.map(entry => <ChatHistoryCard key={entry.item.id} entry={entry} onOpen={onOpenChat} />)}
-          </div>
-        )}
-      </div>
+    <div>
+      <span className="field-label">{icon}{label}</span>
+      {children}
     </div>
   );
 }
 
-/* ---------------- Post flow ---------------- */
-
-function PostChooser({ onClose, onChoose }) {
-  return (
-    <Modal onClose={onClose} title="What do you want to post?">
-      <div className="grid sm:grid-cols-2 gap-4">
-        <button onClick={() => onChoose("service")}
-          className="text-left p-5 rounded-2xl border-2 border-slate-100 hover:border-blue-400 hover:bg-blue-50/40 transition group">
-          <div className="text-3xl mb-2">🙋</div>
-          <p className="font-bold">I can help with something</p>
-          <p className="text-sm text-slate-500 mt-1">Post a service you can offer to other students.</p>
-        </button>
-        <button onClick={() => onChoose("request")}
-          className="text-left p-5 rounded-2xl border-2 border-slate-100 hover:border-blue-400 hover:bg-blue-50/40 transition group">
-          <div className="text-3xl mb-2">🙏</div>
-          <p className="font-bold">I need help with something</p>
-          <p className="text-sm text-slate-500 mt-1">Post a task you'd like another student to help with.</p>
-        </button>
-      </div>
-    </Modal>
-  );
-}
-
-function Field({ label, children }) {
-  return (
-    <label className="block">
-      <span className="text-sm font-semibold text-slate-700">{label}</span>
-      <div className="mt-1.5">{children}</div>
-    </label>
-  );
-}
-
-const inputCls = "w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400";
-
-function formatDate(date) {
-  return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
-}
-
-function sameDay(a, b) {
-  return a && b && a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
-}
-
-function DatePicker({ value, onChange }) {
-  const [open, setOpen] = useState(false);
-  const [pos, setPos] = useState({ top: 0, left: 0, flip: false });
-  const selected = value ? new Date(value) : null;
-  const validSelected = selected && !isNaN(selected) ? selected : null;
-  const [viewDate, setViewDate] = useState(validSelected ? new Date(validSelected.getFullYear(), validSelected.getMonth(), 1) : new Date());
-  const btnRef = useRef(null);
-  const panelRef = useRef(null);
-
-  useEffect(() => {
-    const handleOutside = (e) => {
-      if (panelRef.current && panelRef.current.contains(e.target)) return;
-      if (btnRef.current && btnRef.current.contains(e.target)) return;
-      setOpen(false);
-    };
-    const handleReflow = () => setOpen(false);
-    document.addEventListener("mousedown", handleOutside);
-    window.addEventListener("resize", handleReflow);
-    window.addEventListener("scroll", handleReflow, true);
-    return () => {
-      document.removeEventListener("mousedown", handleOutside);
-      window.removeEventListener("resize", handleReflow);
-      window.removeEventListener("scroll", handleReflow, true);
-    };
-  }, []);
-
-  const CAL_W = 288;
-  const CAL_H = 336;
-
-  const togglePicker = () => {
-    if (!open && btnRef.current) {
-      const rect = btnRef.current.getBoundingClientRect();
-      let left = rect.left;
-      if (left + CAL_W > window.innerWidth - 12) left = Math.max(12, window.innerWidth - CAL_W - 12);
-      const fitsBelow = rect.bottom + 8 + CAL_H <= window.innerHeight - 12;
-      const top = fitsBelow ? rect.bottom + 8 : Math.max(12, rect.top - CAL_H - 8);
-      setPos({ top, left, flip: !fitsBelow });
-    }
-    setOpen(o => !o);
-  };
-
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  const year = viewDate.getFullYear();
-  const month = viewDate.getMonth();
-  const firstWeekday = new Date(year, month, 1).getDay();
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
-  const cells = [...Array(firstWeekday).fill(null), ...Array(daysInMonth).keys()].map((d, i) => (d === null ? null : d + 1));
-
-  const pick = (day) => {
-    onChange(formatDate(new Date(year, month, day)));
-    setOpen(false);
-  };
-
-  return (
-    <React.Fragment>
-      <button ref={btnRef} type="button" onClick={togglePicker}
-        className={`${inputCls} flex items-center justify-between text-left ${!value ? "text-slate-400" : "text-slate-900"}`}>
-        <span>{value || "Select a date"}</span>
-        <span aria-hidden="true">📅</span>
-      </button>
-      {open && (
-        <div ref={panelRef} style={{ position: "fixed", top: pos.top, left: pos.left, width: CAL_W }}
-          className="pop-in z-[70] bg-white rounded-2xl border border-slate-200 shadow-2xl p-4">
-          <div className="flex items-center justify-between mb-3">
-            <button type="button" onClick={() => setViewDate(new Date(year, month - 1, 1))}
-              className="w-8 h-8 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-500 font-bold">‹</button>
-            <p className="font-bold text-sm">{viewDate.toLocaleDateString("en-US", { month: "long", year: "numeric" })}</p>
-            <button type="button" onClick={() => setViewDate(new Date(year, month + 1, 1))}
-              className="w-8 h-8 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-500 font-bold">›</button>
-          </div>
-          <div className="grid grid-cols-7 gap-1 text-center text-xs font-semibold text-slate-400 mb-1">
-            {["S", "M", "T", "W", "T", "F", "S"].map((d, i) => <div key={i}>{d}</div>)}
-          </div>
-          <div className="grid grid-cols-7 gap-1">
-            {cells.map((day, i) => {
-              if (day === null) return <div key={i} />;
-              const date = new Date(year, month, day);
-              const isPast = date < today;
-              const isSelected = sameDay(date, validSelected);
-              const isToday = sameDay(date, today);
-              return (
-                <button type="button" key={i} disabled={isPast} onClick={() => pick(day)}
-                  className={`w-9 h-9 rounded-lg text-sm font-medium transition
-                    ${isSelected ? "bg-blue-600 text-white" : isPast ? "text-slate-300 cursor-not-allowed" : "text-slate-700 hover:bg-blue-50"}
-                    ${isToday && !isSelected ? "ring-1 ring-inset ring-blue-400" : ""}`}>
-                  {day}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      )}
-    </React.Fragment>
-  );
-}
-
-function ServiceForm({ onClose, onSubmit }) {
-  const [form, setForm] = useState({ title: "", category: CATEGORIES[0], description: "", price: "" });
-  const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
-  const valid = form.title && form.description && form.price;
-  return (
-    <Modal onClose={onClose} title="Post a Service" subtitle="I can help with something">
-      <form onSubmit={e => { e.preventDefault(); if (valid) onSubmit(form); }} className="space-y-4">
-        <Field label="Title"><input required value={form.title} onChange={set("title")} className={inputCls} placeholder="e.g. Python Debugging & Homework Help" /></Field>
-        <Field label="Category">
-          <select value={form.category} onChange={set("category")} className={inputCls}>
-            {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-          </select>
-        </Field>
-        <Field label="Description"><textarea required value={form.description} onChange={set("description")} rows="3" className={inputCls} placeholder="What can you help with? What's your experience?" /></Field>
-        <Field label="Price"><input required value={form.price} onChange={set("price")} className={inputCls} placeholder="e.g. 150 THB/hr" /></Field>
-        <div className="flex gap-3 pt-2">
-          <GhostButton onClick={onClose} className="flex-1">Cancel</GhostButton>
-          <PrimaryButton type="submit" disabled={!valid} className="flex-1 disabled:opacity-40 disabled:cursor-not-allowed">Post Service</PrimaryButton>
-        </div>
-      </form>
-    </Modal>
-  );
-}
-
-function RequestForm({ onClose, onSubmit }) {
-  const [form, setForm] = useState({ title: "", category: CATEGORIES[0], description: "", budget: "", deadline: "" });
-  const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
-  const valid = form.title && form.description && form.budget && form.deadline;
-  return (
-    <Modal onClose={onClose} title="Post a Help Request" subtitle="I need help with something">
-      <form onSubmit={e => { e.preventDefault(); if (valid) onSubmit(form); }} className="space-y-4">
-        <Field label="Title"><input required value={form.title} onChange={set("title")} className={inputCls} placeholder="e.g. Need help debugging Python" /></Field>
-        <Field label="Category">
-          <select value={form.category} onChange={set("category")} className={inputCls}>
-            {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-          </select>
-        </Field>
-        <Field label="Description"><textarea required value={form.description} onChange={set("description")} rows="3" className={inputCls} placeholder="Describe what you need help with" /></Field>
-        <div className="grid grid-cols-2 gap-4">
-          <Field label="Budget"><input required value={form.budget} onChange={set("budget")} className={inputCls} placeholder="e.g. 150 THB" /></Field>
-          <Field label="Deadline"><DatePicker value={form.deadline} onChange={(d) => setForm({ ...form, deadline: d })} /></Field>
-        </div>
-        <div className="flex gap-3 pt-2">
-          <GhostButton onClick={onClose} className="flex-1">Cancel</GhostButton>
-          <PrimaryButton type="submit" disabled={!valid} className="flex-1 disabled:opacity-40 disabled:cursor-not-allowed">Post Request</PrimaryButton>
-        </div>
-      </form>
-    </Modal>
-  );
-}
-
-function DeleteConfirm({ onConfirm, onCancel, label }) {
-  return (
-    <div className="fade-in flex items-center justify-between gap-3 bg-rose-50 border border-rose-200 rounded-xl px-4 py-3">
-      <p className="text-sm font-semibold text-rose-700">Delete this {label}? This can't be undone.</p>
-      <div className="flex gap-2 shrink-0">
-        <button type="button" onClick={onCancel} className="text-sm font-semibold text-slate-600 hover:text-slate-800 px-2">Cancel</button>
-        <button type="button" onClick={onConfirm} className="text-sm font-semibold text-white bg-rose-600 hover:bg-rose-700 rounded-lg px-3 py-1.5">Delete</button>
-      </div>
-    </div>
-  );
-}
-
-function EditServiceForm({ item, onClose, onSave, onDelete }) {
-  const [form, setForm] = useState({ title: item.title, category: item.category, description: item.description, price: item.price, status: item.status });
-  const [confirmingDelete, setConfirmingDelete] = useState(false);
-  const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
-  const valid = form.title && form.description && form.price;
-  return (
-    <Modal onClose={onClose} title="Edit Service" subtitle={item.title}>
-      <form onSubmit={e => { e.preventDefault(); if (valid) onSave(item.id, form); }} className="space-y-4">
-        <Field label="Title"><input required value={form.title} onChange={set("title")} className={inputCls} /></Field>
-        <div className="grid grid-cols-2 gap-4">
-          <Field label="Category">
-            <select value={form.category} onChange={set("category")} className={inputCls}>
-              {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-            </select>
-          </Field>
-          <Field label="Status">
-            <select value={form.status} onChange={set("status")} className={inputCls}>
-              <option value="Active">Active</option>
-              <option value="Paused">Paused</option>
-            </select>
-          </Field>
-        </div>
-        <Field label="Description"><textarea required value={form.description} onChange={set("description")} rows="3" className={inputCls} /></Field>
-        <Field label="Price"><input required value={form.price} onChange={set("price")} className={inputCls} /></Field>
-        <div className="flex gap-3 pt-2">
-          <GhostButton onClick={onClose} className="flex-1">Cancel</GhostButton>
-          <PrimaryButton type="submit" disabled={!valid} className="flex-1 disabled:opacity-40 disabled:cursor-not-allowed">Save Changes</PrimaryButton>
-        </div>
-        {confirmingDelete ? (
-          <DeleteConfirm label="service" onCancel={() => setConfirmingDelete(false)} onConfirm={() => onDelete(item.id)} />
-        ) : (
-          <button type="button" onClick={() => setConfirmingDelete(true)}
-            className="w-full text-center text-sm font-semibold text-rose-600 hover:text-rose-700 pt-1">
-            Delete this service
-          </button>
-        )}
-      </form>
-    </Modal>
-  );
-}
-
-function EditRequestForm({ item, onClose, onSave, onDelete }) {
-  const [form, setForm] = useState({ title: item.title, category: item.category, description: item.description, budget: item.budget, deadline: item.deadline, status: item.status });
-  const [confirmingDelete, setConfirmingDelete] = useState(false);
-  const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
-  const valid = form.title && form.description && form.budget && form.deadline;
-  return (
-    <Modal onClose={onClose} title="Edit Help Request" subtitle={item.title}>
-      <form onSubmit={e => { e.preventDefault(); if (valid) onSave(item.id, form); }} className="space-y-4">
-        <Field label="Title"><input required value={form.title} onChange={set("title")} className={inputCls} /></Field>
-        <div className="grid grid-cols-2 gap-4">
-          <Field label="Category">
-            <select value={form.category} onChange={set("category")} className={inputCls}>
-              {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-            </select>
-          </Field>
-          <Field label="Status">
-            <select value={form.status} onChange={set("status")} className={inputCls}>
-              <option value="Open">Open</option>
-              <option value="Fulfilled">Fulfilled</option>
-            </select>
-          </Field>
-        </div>
-        <Field label="Description"><textarea required value={form.description} onChange={set("description")} rows="3" className={inputCls} /></Field>
-        <div className="grid grid-cols-2 gap-4">
-          <Field label="Budget"><input required value={form.budget} onChange={set("budget")} className={inputCls} /></Field>
-          <Field label="Deadline"><DatePicker value={form.deadline} onChange={(d) => setForm({ ...form, deadline: d })} /></Field>
-        </div>
-        <div className="flex gap-3 pt-2">
-          <GhostButton onClick={onClose} className="flex-1">Cancel</GhostButton>
-          <PrimaryButton type="submit" disabled={!valid} className="flex-1 disabled:opacity-40 disabled:cursor-not-allowed">Save Changes</PrimaryButton>
-        </div>
-        {confirmingDelete ? (
-          <DeleteConfirm label="help request" onCancel={() => setConfirmingDelete(false)} onConfirm={() => onDelete(item.id)} />
-        ) : (
-          <button type="button" onClick={() => setConfirmingDelete(true)}
-            className="w-full text-center text-sm font-semibold text-rose-600 hover:text-rose-700 pt-1">
-            Delete this help request
-          </button>
-        )}
-      </form>
-    </Modal>
-  );
-}
-
-function Modal({ children, onClose, title, subtitle }) {
-  return (
-    <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4" onClick={onClose}>
-      <div onClick={e => e.stopPropagation()} className="pop-in bg-white rounded-3xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto p-6">
-        <div className="flex items-start justify-between mb-4">
-          <div>
-            <h2 className="text-xl font-extrabold">{title}</h2>
-            {subtitle && <p className="text-sm text-blue-600 font-semibold">{subtitle}</p>}
-          </div>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-700 text-2xl leading-none">&times;</button>
-        </div>
-        {children}
-      </div>
-    </div>
-  );
-}
-
-/* ---------------- Detail + Chat (full page) ---------------- */
-
-function DetailPage({ item, chatEntry, onUpdateChat, onBack }) {
-  const isService = item.type === "service";
-  const isOwnPost = item.name === CURRENT_USER.name;
-  const [messages, setMessages] = useState(chatEntry ? chatEntry.messages : [
-    { from: "them", text: isService
-        ? `Hi! Thanks for checking out my post. Feel free to ask me anything about "${item.title}".`
-        : `Hi! This is about "${item.title}". Let me know if you have questions before we get started.` },
-  ]);
+function ChatCard({ item, opener, onMatch, matched, matchLabel }) {
+  const [messages, setMessages] = useState([{ from: "them", text: opener }]);
   const [draft, setDraft] = useState("");
-  const [matched, setMatched] = useState(chatEntry ? chatEntry.matched : false);
-  const [justMatched, setJustMatched] = useState(false);
   const scrollRef = useRef(null);
 
   useEffect(() => {
@@ -810,209 +228,490 @@ function DetailPage({ item, chatEntry, onUpdateChat, onBack }) {
 
   const send = () => {
     if (!draft.trim()) return;
-    const withMe = [...messages, { from: "me", text: draft.trim() }];
-    setMessages(withMe);
-    onUpdateChat(item, withMe, matched);
+    setMessages(m => [...m, { from: "me", text: draft.trim() }]);
     setDraft("");
     setTimeout(() => {
-      setMessages(m => {
-        const withReply = [...m, { from: "them", text: "Sounds good, let's figure out the details 🙂" }];
-        onUpdateChat(item, withReply, matched);
-        return withReply;
-      });
+      setMessages(m => [...m, { from: "them", text: "Sounds good — let's sort out the details." }]);
     }, 700);
   };
 
-  const handleMatch = () => {
-    setMatched(true);
-    setJustMatched(true);
-    onUpdateChat(item, messages, true);
-  };
-
   return (
-    <div className="fade-in max-w-2xl mx-auto px-5 py-10">
-      <button onClick={onBack} className="mb-6 inline-flex items-center gap-1.5 text-sm font-semibold text-slate-500 hover:text-slate-800 transition">
-        <span aria-hidden="true">←</span> Back
-      </button>
-
-      {justMatched ? (
-        <div className="pop-in bg-white rounded-3xl border border-slate-100 p-10 text-center">
-          <div className="text-5xl mb-4">🎉</div>
-          <h1 className="text-2xl font-extrabold mb-1">It's a match!</h1>
-          <p className="text-slate-500 mb-6">You can now work together.</p>
-          <PrimaryButton onClick={onBack}>Done</PrimaryButton>
+    <div className="mt-8">
+      <h2 className="mb-3 text-lg font-semibold">Chat with {item.name}</h2>
+      <div className="rounded-2xl border shadow-sm" style={{ borderColor: "var(--border)", background: "var(--card)" }}>
+        <div className="flex items-center gap-3 border-b px-5 py-4" style={{ borderColor: "var(--border)" }}>
+          <Avatar initials={item.initials} size={36} radius="full" tone="tint" />
+          <div>
+            <div className="text-sm font-semibold">{item.name}</div>
+            <div className="text-xs muted">Usually replies within an hour</div>
+          </div>
         </div>
-      ) : (
-        <div className="bg-white rounded-3xl border border-slate-100 p-6 sm:p-8">
-          <div className="flex items-center gap-3 mb-3">
-            <Avatar name={item.name} size="w-12 h-12 text-base" />
-            <div>
-              <h1 className="text-xl font-extrabold leading-snug">{item.title}</h1>
-              <p className="text-sm text-slate-500">{isOwnPost ? "You" : item.name}</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2 flex-wrap mb-3">
-            <CategoryBadge category={item.category} />
-            {isService
-              ? <Badge className="bg-blue-50 text-blue-700">{item.price}</Badge>
-              : <Badge className="bg-emerald-50 text-emerald-700">Budget: {item.budget}</Badge>}
-          </div>
-          <p className="text-sm text-slate-600 mb-2">{item.description}</p>
-          {!isService && <p className="text-xs text-slate-400 mb-4">Deadline: {item.deadline}</p>}
-
-          {isOwnPost ? (
-            <div className="mt-4 bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-sm text-slate-500">
-              This is one of your own posts. Head to your <span className="font-semibold text-slate-700">Profile</span> to edit or manage it.
+        <div ref={scrollRef} className="flex flex-col gap-3 overflow-y-auto px-5 py-4" style={{ maxHeight: "20rem" }}>
+          {messages.map((m, i) => (
+            <div key={i} className={`max-w-[80%] rounded-2xl px-4 py-2.5 text-sm ${m.from === "me" ? "chat-bubble-me self-end" : "chat-bubble-them self-start"}`}>{m.text}</div>
+          ))}
+        </div>
+        <form onSubmit={e => { e.preventDefault(); send(); }} className="flex items-center gap-2 border-t px-4 py-3" style={{ borderColor: "var(--border)" }}>
+          <input value={draft} onChange={e => setDraft(e.target.value)} placeholder="Discuss the task..." className="field-input" style={{ flex: 1 }} />
+          <button type="submit" disabled={!draft.trim()} className="btn btn-primary btn-icon" aria-label="Send message">
+            <SendIcon className="h-4 w-4" />
+          </button>
+        </form>
+        <div className="border-t px-5 py-4" style={{ borderColor: "var(--border)" }}>
+          {matched ? (
+            <div className="btn btn-primary btn-block" style={{ opacity: .65, cursor: "default" }}>
+              <CheckIcon className="h-4 w-4" /> Matched
             </div>
           ) : (
-            <React.Fragment>
-              {matched && (
-                <div className="mt-4 mb-4 flex items-center gap-2 bg-violet-50 border border-violet-100 rounded-xl px-4 py-2.5 text-sm text-violet-700 font-semibold">
-                  <span>🎉</span> You matched on this — chat below to coordinate.
-                </div>
-              )}
-              <div className={`border border-slate-200 rounded-2xl overflow-hidden ${matched ? "" : "mt-4"}`}>
-                <div className="bg-slate-50 px-4 py-2 text-xs font-bold text-slate-500 uppercase tracking-wide">Chat</div>
-                <div ref={scrollRef} className="h-64 overflow-y-auto px-4 py-3 space-y-2 bg-white">
-                  {messages.map((m, i) => (
-                    <div key={i} className={`flex ${m.from === "me" ? "justify-end" : "justify-start"}`}>
-                      <div className={`max-w-[75%] rounded-2xl px-3.5 py-2 text-sm ${m.from === "me" ? "bg-blue-600 text-white rounded-br-sm" : "bg-slate-100 text-slate-700 rounded-bl-sm"}`}>
-                        {m.text}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <div className="flex items-center gap-2 border-t border-slate-100 p-2">
-                  <input
-                    value={draft}
-                    onChange={e => setDraft(e.target.value)}
-                    onKeyDown={e => e.key === "Enter" && send()}
-                    placeholder="Type a message..."
-                    className="flex-1 text-sm px-3 py-2 rounded-lg bg-slate-50 focus:outline-none focus:ring-2 focus:ring-blue-500/30" />
-                  <button onClick={send} disabled={!draft.trim()}
-                    className="bg-blue-600 hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed text-white rounded-lg px-4 py-2 text-sm font-semibold">Send</button>
-                </div>
-              </div>
-
-              {matched ? (
-                <GhostButton className="w-full mt-5 !text-violet-700 !border-violet-200 cursor-default" onClick={() => {}}>
-                  Matched ✓
-                </GhostButton>
-              ) : (
-                <PrimaryButton onClick={handleMatch} className="w-full mt-5">
-                  {isService ? "Request Help" : "Offer to Help"}
-                </PrimaryButton>
-              )}
-            </React.Fragment>
+            <button onClick={onMatch} className="btn btn-primary btn-block">{matchLabel}</button>
           )}
         </div>
-      )}
+      </div>
     </div>
   );
 }
 
-/* ---------------- App ---------------- */
+/* ---------------- Cards ---------------- */
 
-function App() {
-  const [page, setPage] = useState("home");
-  const [services, setServices] = useState(INITIAL_SERVICES);
-  const [requests, setRequests] = useState(INITIAL_REQUESTS);
+function ServiceCard({ item, nav }) {
+  return (
+    <Link to={`/service/${item.slug}`} nav={nav} className="card-link fade-in">
+      <div className="mb-4 flex items-start justify-between gap-3">
+        <Avatar initials={item.initials} size={48} radius="xl" tone="tint" />
+        <span className="badge">{item.category}</span>
+      </div>
+      <h3 className="card-title text-lg font-semibold transition">{item.title}</h3>
+      <p className="mt-1 text-sm line-clamp-2 muted">{item.description}</p>
+      <div className="mt-auto flex items-center justify-between pt-4">
+        <span className="text-sm font-semibold">{item.price}</span>
+        <span className="flex items-center gap-1 text-sm muted">
+          <StarIcon className="h-4 w-4" />
+          <span className="font-medium" style={{ color: "var(--foreground)" }}>{item.rating.toFixed(1)}</span>
+          <span className="text-xs">({item.reviews})</span>
+        </span>
+      </div>
+      <div className="mt-3 flex items-center gap-2 border-t pt-3" style={{ borderColor: "var(--border)" }}>
+        <Avatar initials={item.initials[0]} size={24} radius="full" tone="muted" />
+        <span className="text-sm font-medium">{item.name}</span>
+      </div>
+    </Link>
+  );
+}
 
-  const [detailItem, setDetailItem] = useState(null);
-  const [returnPage, setReturnPage] = useState("home");
-  const [showChooser, setShowChooser] = useState(false);
-  const [formType, setFormType] = useState(null); // 'service' | 'request'
-  const [editTarget, setEditTarget] = useState(null); // { type: 'service'|'request', item }
-  const [chats, setChats] = useState({}); // id -> { item, messages, matched }
+function RequestCard({ item, nav }) {
+  return (
+    <Link to={`/requests/${item.slug}`} nav={nav} className="card-link fade-in">
+      <div className="mb-4 flex items-start justify-between gap-3">
+        <div className="flex items-center gap-2.5">
+          <Avatar initials={item.initials} size={40} radius="full" tone="tint" />
+          <span className="text-sm font-medium">{item.name}</span>
+        </div>
+        <span className="badge">{item.category}</span>
+      </div>
+      <h3 className="card-title text-lg font-semibold transition">{item.title}</h3>
+      <p className="mt-1 text-sm line-clamp-2 muted">{item.description}</p>
+      <div className="mt-auto flex items-center justify-between gap-3 border-t pt-4" style={{ borderColor: "var(--border)" }}>
+        <span className="flex items-center gap-1.5 text-sm font-semibold">
+          <WalletIcon className="h-4 w-4 muted" /> {item.budget}
+        </span>
+        <span className="flex items-center gap-1.5 text-sm muted">
+          <CalendarIcon className="h-4 w-4" /> {item.deadline}
+        </span>
+      </div>
+    </Link>
+  );
+}
 
-  const openDetail = (item) => {
-    setReturnPage(page);
-    setDetailItem(item);
-    setPage("detail");
-  };
-  const backFromDetail = () => setPage(returnPage);
+/* ---------------- Pages ---------------- */
 
-  const openPost = () => setShowChooser(true);
-  const closePostFlow = () => { setShowChooser(false); setFormType(null); };
-  const chooseType = (t) => { setShowChooser(false); setFormType(t); };
-
-  const submitService = (form) => {
-    const newItem = { id: "s" + Date.now(), type: "service", name: CURRENT_USER.name, rating: 5.0, reviews: 0, status: "Active", ...form };
-    setServices(s => [newItem, ...s]);
-    closePostFlow();
-    setPage("services");
-  };
-
-  const submitRequest = (form) => {
-    const newItem = { id: "r" + Date.now(), type: "request", name: CURRENT_USER.name, status: "Open", ...form };
-    setRequests(r => [newItem, ...r]);
-    closePostFlow();
-    setPage("requests");
-  };
-
-  const openEditService = (item) => setEditTarget({ type: "service", item });
-  const openEditRequest = (item) => setEditTarget({ type: "request", item });
-  const closeEdit = () => setEditTarget(null);
-
-  const saveService = (id, form) => {
-    setServices(s => s.map(x => (x.id === id ? { ...x, ...form } : x)));
-    closeEdit();
-  };
-
-  const saveRequest = (id, form) => {
-    setRequests(r => r.map(x => (x.id === id ? { ...x, ...form } : x)));
-    closeEdit();
-  };
-
-  const deleteService = (id) => {
-    setServices(s => s.filter(x => x.id !== id));
-    closeEdit();
-  };
-
-  const deleteRequest = (id) => {
-    setRequests(r => r.filter(x => x.id !== id));
-    closeEdit();
-  };
-
-  const updateChat = (item, messages, matched) => {
-    setChats(prev => ({ ...prev, [item.id]: { item, messages, matched } }));
-  };
+function ServicesPage({ nav }) {
+  const [query, setQuery] = useState("");
+  const [category, setCategory] = useState("All");
+  const filtered = useMemo(() => SERVICES.filter(s =>
+    (category === "All" || s.category === category) &&
+    (s.title.toLowerCase().includes(query.toLowerCase()) || s.name.toLowerCase().includes(query.toLowerCase()) || s.description.toLowerCase().includes(query.toLowerCase()))
+  ), [query, category]);
 
   return (
-    <div>
-      <Navbar page={page} setPage={setPage} onPost={openPost} />
+    <div className="fade-in mx-auto max-w-7xl px-4 pt-12 sm:px-6 lg:px-8">
+      <div className="flex flex-col items-center text-center">
+        <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl">Services</h1>
+        <p className="mt-3 text-lg muted">See what SIIT students can help you with.</p>
+        <div className="mt-8 w-full max-w-xl">
+          <SearchBar value={query} onChange={setQuery} placeholder="Search services, skills, or students..." />
+        </div>
+        <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
+          <CategoryPills active={category} onChange={setCategory} />
+        </div>
+      </div>
 
-      {page === "home" && <Home setPage={setPage} services={services} requests={requests} openDetail={openDetail} chats={chats} />}
-      {page === "services" && <ServicesPage services={services} openDetail={openDetail} chats={chats} />}
-      {page === "requests" && <RequestsPage requests={requests} openDetail={openDetail} chats={chats} />}
-      {page === "profile" && (
-        <ProfilePage
-          services={services}
-          requests={requests}
-          chats={chats}
-          onEditService={openEditService}
-          onEditRequest={openEditRequest}
-          onOpenChat={openDetail}
-        />
-      )}
-      {page === "detail" && detailItem && (
-        <DetailPage
-          item={detailItem}
-          chatEntry={chats[detailItem.id]}
-          onUpdateChat={updateChat}
-          onBack={backFromDetail}
-        />
-      )}
+      <div className="py-12">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-semibold">{category === "All" ? "All services" : category}</h2>
+          <span className="text-sm muted">{filtered.length} available</span>
+        </div>
+        {filtered.length === 0 ? (
+          <EmptyState text="No services match your search." />
+        ) : (
+          <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {filtered.map(s => <ServiceCard key={s.slug} item={s} nav={nav} />)}
+          </div>
+        )}
 
-      {showChooser && <PostChooser onClose={closePostFlow} onChoose={chooseType} />}
-      {formType === "service" && <ServiceForm onClose={closePostFlow} onSubmit={submitService} />}
-      {formType === "request" && <RequestForm onClose={closePostFlow} onSubmit={submitRequest} />}
-      {editTarget?.type === "service" && <EditServiceForm item={editTarget.item} onClose={closeEdit} onSave={saveService} onDelete={deleteService} />}
-      {editTarget?.type === "request" && <EditRequestForm item={editTarget.item} onClose={closeEdit} onSave={saveRequest} onDelete={deleteRequest} />}
+        <div className="mt-14 rounded-2xl px-6 py-10 text-center sm:px-12 sm:py-14" style={{ background: "var(--primary)", color: "var(--primary-foreground)" }}>
+          <h2 className="text-2xl font-bold sm:text-3xl">Need something done instead?</h2>
+          <p className="mx-auto mt-2 max-w-lg" style={{ color: "var(--primary-fg-80)" }}>Browse what other students need help with, or post your own request.</p>
+          <div className="mt-6 flex flex-wrap justify-center gap-3">
+            <Link to="/requests" nav={nav} className="btn btn-white">Browse Help Requests</Link>
+            <Link to="/post" nav={nav} className="btn btn-outline-light">Post something</Link>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
-      <footer className="text-center text-xs text-slate-400 py-10">
-        WORKLINK SIIT · Built for SIIT students, by SIIT students.
-      </footer>
+function RequestsPage({ nav }) {
+  const [query, setQuery] = useState("");
+  const [category, setCategory] = useState("All");
+  const filtered = useMemo(() => REQUESTS.filter(r =>
+    (category === "All" || r.category === category) &&
+    (r.title.toLowerCase().includes(query.toLowerCase()) || r.name.toLowerCase().includes(query.toLowerCase()) || r.description.toLowerCase().includes(query.toLowerCase()))
+  ), [query, category]);
+
+  return (
+    <div className="fade-in mx-auto max-w-7xl px-4 pt-12 sm:px-6 lg:px-8">
+      <div className="flex flex-col items-center text-center">
+        <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl">Help Requests</h1>
+        <p className="mt-3 text-lg muted">See what SIIT students need help with.</p>
+        <div className="mt-8 w-full max-w-xl">
+          <SearchBar value={query} onChange={setQuery} placeholder="Search requests, tasks, or students..." />
+        </div>
+        <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
+          <CategoryPills active={category} onChange={setCategory} />
+        </div>
+      </div>
+
+      <div className="py-12">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-semibold">Open requests</h2>
+          <span className="text-sm muted">{filtered.length} open</span>
+        </div>
+        {filtered.length === 0 ? (
+          <EmptyState text="No help requests match your search." />
+        ) : (
+          <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {filtered.map(r => <RequestCard key={r.slug} item={r} nav={nav} />)}
+          </div>
+        )}
+
+        <div className="mt-14 rounded-2xl border p-10 text-center sm:px-12" style={{ borderColor: "var(--border)", background: "var(--card)" }}>
+          <h2 className="text-2xl font-bold">Need help yourself?</h2>
+          <p className="mx-auto mt-2 max-w-lg text-sm muted">Post a request and let the right student find you.</p>
+          <Link to="/post/request" nav={nav} className="btn btn-primary mt-6 inline-flex">Post a Help Request</Link>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function PostPage({ nav }) {
+  return (
+    <div className="fade-in mx-auto max-w-3xl px-4 py-16 sm:px-6 lg:px-8">
+      <div className="text-center">
+        <h1 className="text-3xl font-extrabold tracking-tight sm:text-4xl">What would you like to post?</h1>
+        <p className="mt-3 text-sm muted">One account, two kinds of posts. Offer your skills or ask for help.</p>
+      </div>
+      <div className="mt-10 grid gap-5 sm:grid-cols-2">
+        <Link to="/post/service" nav={nav} className="card-link">
+          <div className="icon-tile" style={{ width: 48, height: 48 }}><HandHelpingIcon className="h-6 w-6" /></div>
+          <h2 className="card-title mt-4 text-lg font-semibold transition">I can help with something</h2>
+          <p className="mt-1 text-sm muted">Create a service post so students can find and hire you.</p>
+        </Link>
+        <Link to="/post/request" nav={nav} className="card-link">
+          <div className="icon-tile" style={{ width: 48, height: 48 }}><HelpCircleIcon className="h-6 w-6" /></div>
+          <h2 className="card-title mt-4 text-lg font-semibold transition">I need help with something</h2>
+          <p className="mt-1 text-sm muted">Post a help request with your budget and deadline.</p>
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+function PostServiceForm({ nav }) {
+  const [form, setForm] = useState({ title: "", category: "", description: "", price: "" });
+  const [submitted, setSubmitted] = useState(false);
+  const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
+  const submit = (e) => { e.preventDefault(); setSubmitted(true); };
+
+  if (submitted) {
+    return (
+      <div className="fade-in mx-auto max-w-2xl px-4 py-20 text-center sm:px-6 lg:px-8">
+        <h1 className="text-2xl font-extrabold">Service posted!</h1>
+        <p className="mt-2 muted">Other students can now find "{form.title}".</p>
+        <Link to="/" nav={nav} className="btn btn-primary mt-6 inline-flex">Back to Services</Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className="fade-in mx-auto max-w-2xl px-4 py-10 sm:px-6 lg:px-8">
+      <Link to="/post" nav={nav} className="inline-flex items-center gap-2 text-sm font-medium transition muted">
+        <ArrowLeftIcon className="h-4 w-4" /> Back
+      </Link>
+      <div className="mt-6 rounded-2xl border p-6 shadow-sm sm:p-8" style={{ borderColor: "var(--border)", background: "var(--card)" }}>
+        <h1 className="text-2xl font-bold sm:text-3xl">I can help with something</h1>
+        <p className="mt-2 text-sm muted">Describe the service you offer and what you charge.</p>
+
+        <form onSubmit={submit} className="mt-6 space-y-5">
+          <Field label="Service title" icon={<MessageSquareIcon className="h-4 w-4" />}>
+            <input required value={form.title} onChange={set("title")} className="field-input" placeholder="e.g., Python Debugging" />
+          </Field>
+          <Field label="Skills / category" icon={<ListIcon className="h-4 w-4" />}>
+            <select required value={form.category} onChange={set("category")} className="field-select">
+              <option value="" disabled>Select a category</option>
+              {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </Field>
+          <Field label="Description" icon={<FileTextIcon className="h-4 w-4" />}>
+            <textarea required value={form.description} onChange={set("description")} className="field-textarea" placeholder="What you help with, how you work, what students get..." />
+          </Field>
+          <Field label="Price / starting price" icon={<WalletIcon className="h-4 w-4" />}>
+            <input required value={form.price} onChange={set("price")} className="field-input" placeholder="e.g., ฿150–250" />
+          </Field>
+          <button type="submit" className="btn btn-primary btn-block mt-2">Post Service</button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function PostRequestForm({ nav }) {
+  const [form, setForm] = useState({ title: "", category: "", description: "", budget: "", deadline: "" });
+  const [submitted, setSubmitted] = useState(false);
+  const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
+  const submit = (e) => { e.preventDefault(); setSubmitted(true); };
+
+  if (submitted) {
+    return (
+      <div className="fade-in mx-auto max-w-2xl px-4 py-20 text-center sm:px-6 lg:px-8">
+        <h1 className="text-2xl font-extrabold">Request posted!</h1>
+        <p className="mt-2 muted">SIIT students can now see "{form.title}".</p>
+        <Link to="/requests" nav={nav} className="btn btn-primary mt-6 inline-flex">Back to Help Requests</Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className="fade-in mx-auto max-w-2xl px-4 py-10 sm:px-6 lg:px-8">
+      <Link to="/post" nav={nav} className="inline-flex items-center gap-2 text-sm font-medium transition muted">
+        <ArrowLeftIcon className="h-4 w-4" /> Back
+      </Link>
+      <div className="mt-6 rounded-2xl border p-6 shadow-sm sm:p-8" style={{ borderColor: "var(--border)", background: "var(--card)" }}>
+        <h1 className="text-2xl font-bold sm:text-3xl">I need help with something</h1>
+        <p className="mt-2 text-sm muted">Describe the task and SIIT students will see your request.</p>
+
+        <form onSubmit={submit} className="mt-6 space-y-5">
+          <Field label="What do you need help with?" icon={<MessageSquareIcon className="h-4 w-4" />}>
+            <input required value={form.title} onChange={set("title")} className="field-input" placeholder="e.g., Need help debugging Python tonight" />
+          </Field>
+          <Field label="Category" icon={<ListIcon className="h-4 w-4" />}>
+            <select required value={form.category} onChange={set("category")} className="field-select">
+              <option value="" disabled>Select a category</option>
+              {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </Field>
+          <Field label="Description" icon={<FileTextIcon className="h-4 w-4" />}>
+            <textarea required value={form.description} onChange={set("description")} className="field-textarea" placeholder="Explain the task and anything the helper should know..." />
+          </Field>
+          <Field label="Budget" icon={<WalletIcon className="h-4 w-4" />}>
+            <input required value={form.budget} onChange={set("budget")} className="field-input" placeholder="e.g., ฿200" />
+          </Field>
+          <Field label="Deadline" icon={<CalendarIcon className="h-4 w-4" />}>
+            <input required value={form.deadline} onChange={set("deadline")} className="field-input" placeholder="e.g., Tonight, 9 PM" />
+          </Field>
+          <button type="submit" className="btn btn-primary btn-block mt-2">Post Request</button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function ServiceDetail({ slug, nav }) {
+  const item = SERVICES.find(s => s.slug === slug);
+  const [matched, setMatched] = useState(false);
+
+  if (!item) {
+    return (
+      <div className="mx-auto max-w-2xl px-4 py-20 text-center sm:px-6 lg:px-8">
+        <p className="muted">Service not found.</p>
+        <Link to="/" nav={nav} className="btn btn-outline mt-4 inline-flex">Back to services</Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className="fade-in mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:px-8">
+      <Link to="/" nav={nav} className="inline-flex items-center gap-2 text-sm font-medium transition muted">
+        <ArrowLeftIcon className="h-4 w-4" /> Back to services
+      </Link>
+
+      <div className="mt-6 rounded-2xl border p-6 shadow-sm sm:p-8" style={{ borderColor: "var(--border)", background: "var(--card)" }}>
+        <div className="flex items-start gap-4">
+          <Avatar initials={item.initials} size={64} radius="2xl" tone="solid" />
+          <div className="flex-1">
+            <span className="badge">{item.category}</span>
+            <h1 className="mt-2 text-2xl font-bold sm:text-3xl">{item.title}</h1>
+            <p className="mt-1 text-sm muted">Offered by {item.name}</p>
+          </div>
+        </div>
+
+        <div className="mt-6 grid gap-4 sm:grid-cols-3">
+          <div className="stat-tile">
+            <div className="text-xs font-medium muted">Starting price</div>
+            <div className="mt-1 text-lg font-semibold">{item.price}</div>
+          </div>
+          <div className="stat-tile">
+            <div className="text-xs font-medium muted">Rating</div>
+            <div className="mt-1 flex items-center gap-1 text-lg font-semibold">
+              <StarIcon className="h-5 w-5" /> {item.rating.toFixed(1)} <span className="text-xs font-normal muted">({item.reviews})</span>
+            </div>
+          </div>
+          <div className="stat-tile">
+            <div className="text-xs font-medium muted">Student</div>
+            <div className="mt-1 flex items-center gap-2 text-lg font-semibold">
+              <UserIcon className="h-4 w-4 muted" /> {item.name}
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-6">
+          <h2 className="text-sm font-semibold">About this service</h2>
+          <p className="mt-2 text-sm leading-relaxed muted">{item.description}</p>
+        </div>
+      </div>
+
+      <ChatCard
+        item={item}
+        opener={`Hi! I offer ${item.title}. Tell me about your task and I'll let you know how I can help.`}
+        onMatch={() => setMatched(true)}
+        matched={matched}
+        matchLabel="Match with this student"
+      />
+    </div>
+  );
+}
+
+function RequestDetail({ slug, nav }) {
+  const item = REQUESTS.find(r => r.slug === slug);
+  const [matched, setMatched] = useState(false);
+
+  if (!item) {
+    return (
+      <div className="mx-auto max-w-2xl px-4 py-20 text-center sm:px-6 lg:px-8">
+        <p className="muted">Request not found.</p>
+        <Link to="/requests" nav={nav} className="btn btn-outline mt-4 inline-flex">Back to help requests</Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className="fade-in mx-auto max-w-3xl px-4 py-10 sm:px-6 lg:px-8">
+      <Link to="/requests" nav={nav} className="inline-flex items-center gap-2 text-sm font-medium transition muted">
+        <ArrowLeftIcon className="h-4 w-4" /> Back to help requests
+      </Link>
+
+      <div className="mt-6 rounded-2xl border p-6 shadow-sm sm:p-8" style={{ borderColor: "var(--border)", background: "var(--card)" }}>
+        <div className="flex items-start gap-4">
+          <Avatar initials={item.initials} size={56} radius="full" tone="tint" />
+          <div className="flex-1">
+            <span className="badge">{item.category}</span>
+            <h1 className="mt-2 text-2xl font-bold sm:text-3xl">{item.title}</h1>
+            <p className="mt-1 text-sm muted">Posted by {item.name}</p>
+          </div>
+        </div>
+
+        <div className="mt-6 grid gap-4 sm:grid-cols-2">
+          <div className="stat-tile">
+            <div className="flex items-center gap-2 text-xs font-medium muted"><WalletIcon className="h-4 w-4" /> Budget</div>
+            <div className="mt-1 text-lg font-semibold">{item.budget}</div>
+          </div>
+          <div className="stat-tile">
+            <div className="flex items-center gap-2 text-xs font-medium muted"><CalendarIcon className="h-4 w-4" /> Deadline</div>
+            <div className="mt-1 text-lg font-semibold">{item.deadline}</div>
+          </div>
+        </div>
+
+        <div className="mt-6">
+          <h2 className="text-sm font-semibold">What they need</h2>
+          <p className="mt-2 text-sm leading-relaxed muted">{item.description}</p>
+        </div>
+      </div>
+
+      <ChatCard
+        item={item}
+        opener={`Hi! Thanks for checking out my request — "${item.title}". Can you help?`}
+        onMatch={() => setMatched(true)}
+        matched={matched}
+        matchLabel="Offer to Help"
+      />
+    </div>
+  );
+}
+
+function NotFound({ nav }) {
+  return (
+    <div className="mx-auto max-w-lg px-4 py-20 text-center sm:px-6 lg:px-8">
+      <h1 className="text-2xl font-extrabold">Page not found</h1>
+      <Link to="/" nav={nav} className="btn btn-primary mt-6 inline-flex">Back to Services</Link>
+    </div>
+  );
+}
+
+/* ---------------- Shell ---------------- */
+
+function Header({ path, nav }) {
+  const servicesActive = path === "/" || path.startsWith("/service/");
+  const requestsActive = path === "/requests" || path.startsWith("/requests/");
+  return (
+    <header className="sticky top-0 z-40 w-full border-b" style={{ borderColor: "var(--border)", background: "color-mix(in oklch, var(--background) 80%, transparent)", backdropFilter: "blur(8px)" }}>
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
+        <Link to="/" nav={nav} className="flex items-center gap-2.5">
+          <div className="flex h-9 w-9 items-center justify-center rounded-lg" style={{ background: "var(--primary)", color: "var(--primary-foreground)" }}>
+            <HandHelpingIcon className="h-5 w-5" />
+          </div>
+          <div className="flex flex-col">
+            <span className="text-sm font-extrabold leading-none tracking-tight">WORKLINK</span>
+            <span className="text-[10px] font-semibold uppercase leading-none tracking-widest" style={{ color: "var(--primary)" }}>SIIT</span>
+          </div>
+        </Link>
+        <nav className="flex items-center gap-1">
+          <Link to="/" nav={nav} className={`nav-link ${servicesActive ? "active" : ""}`}>Services</Link>
+          <Link to="/requests" nav={nav} className={`nav-link ${requestsActive ? "active" : ""}`}>Help Requests</Link>
+          <Link to="/post" nav={nav} className="nav-post"><PlusIcon className="h-4 w-4" /> Post</Link>
+        </nav>
+      </div>
+    </header>
+  );
+}
+
+function App() {
+  const [path, nav] = useRouter();
+
+  let page;
+  if (path === "/") page = <ServicesPage nav={nav} />;
+  else if (path === "/requests") page = <RequestsPage nav={nav} />;
+  else if (path.startsWith("/requests/")) page = <RequestDetail slug={path.replace("/requests/", "")} nav={nav} />;
+  else if (path === "/post") page = <PostPage nav={nav} />;
+  else if (path === "/post/service") page = <PostServiceForm nav={nav} />;
+  else if (path === "/post/request") page = <PostRequestForm nav={nav} />;
+  else if (path.startsWith("/service/")) page = <ServiceDetail slug={path.replace("/service/", "")} nav={nav} />;
+  else page = <NotFound nav={nav} />;
+
+  return (
+    <div className="min-h-screen" style={{ background: "var(--background)" }}>
+      <Header path={path} nav={nav} />
+      <main>{page}</main>
     </div>
   );
 }
