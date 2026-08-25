@@ -35,17 +35,26 @@
     --secondary-hover: color-mix(in oklch, var(--secondary) 70%, var(--muted));
   }
   * { font-family: 'Inter', system-ui, -apple-system, sans-serif; box-sizing: border-box; }
+  html, body { overflow-x: hidden; }
   body { background: var(--background); color: var(--foreground); margin: 0; }
   ::-webkit-scrollbar { width: 8px; height: 8px; }
   ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 8px; }
   .fade-in { animation: fadeIn .3s ease both; }
   @keyframes fadeIn { from { opacity: 0; transform: translateY(6px);} to { opacity: 1; transform: translateY(0);} }
 
-  .nav-link { padding:.375rem .75rem; border-radius:999px; font-size:.875rem; font-weight:500; color:var(--muted-foreground); transition:.15s; text-decoration:none; }
+  .header-nav { display:flex; align-items:center; gap:.15rem; overflow-x:auto; scrollbar-width:none; -ms-overflow-style:none; min-width:0; }
+  .header-nav::-webkit-scrollbar { display:none; }
+  .nav-link { padding:.375rem .6rem; border-radius:999px; font-size:.875rem; font-weight:500; color:var(--muted-foreground); transition:.15s; text-decoration:none; white-space:nowrap; flex-shrink:0; }
   .nav-link:hover { background:var(--secondary); color:var(--foreground); }
   .nav-link.active { background:var(--secondary); color:var(--foreground); font-weight:600; }
-  .nav-post { margin-left:.25rem; display:inline-flex; align-items:center; gap:.4rem; border-radius:999px; padding:.55rem 1.1rem; font-size:.875rem; font-weight:600; background:var(--primary); color:var(--primary-foreground); box-shadow:0 1px 2px oklch(15% .02 260 / .06); transition:.15s; text-decoration:none; }
+  .nav-post { margin-left:.25rem; display:inline-flex; align-items:center; gap:.4rem; border-radius:999px; padding:.55rem 1rem; font-size:.875rem; font-weight:600; background:var(--primary); color:var(--primary-foreground); box-shadow:0 1px 2px oklch(15% .02 260 / .06); transition:.15s; text-decoration:none; white-space:nowrap; flex-shrink:0; }
   .nav-post:hover { filter:brightness(1.08); }
+  .profile-nav-link { display:inline-flex; align-items:center; justify-content:center; border-radius:9999px; flex-shrink:0; padding:.15rem; transition:.15s; }
+  .profile-nav-link:hover { background:var(--secondary); }
+  @media (max-width: 480px) {
+    .nav-link { padding:.375rem .5rem; font-size:.8rem; }
+    .nav-post { padding:.5rem .8rem; font-size:.8rem; }
+  }
 
   .btn { display:inline-flex; align-items:center; justify-content:center; gap:.45rem; border-radius:999px; font-weight:600; font-size:.875rem; padding:.7rem 1.4rem; transition:.15s; cursor:pointer; border:1px solid transparent; white-space:nowrap; text-decoration:none; }
   .btn:disabled { opacity:.5; cursor:not-allowed; }
@@ -87,6 +96,30 @@
 
   .stat-tile { border-radius:.75rem; padding:1rem; background:var(--secondary); }
   .muted { color:var(--muted-foreground); }
+
+  .field-required-mark { color:oklch(55% .2 25); margin-left:.15rem; }
+  .field-error { margin-top:.35rem; font-size:.78rem; color:oklch(55% .2 25); }
+  .field-input.invalid, .field-textarea.invalid, .field-select.invalid { border-color:oklch(55% .2 25); }
+  .form-legend { font-size:.78rem; color:var(--muted-foreground); margin-top:.35rem; }
+
+  .own-post-notice { display:flex; align-items:center; gap:.75rem; border-radius:.75rem; background:var(--secondary); padding:1rem 1.1rem; font-size:.875rem; color:var(--secondary-foreground); }
+
+  .link-btn { background:none; border:none; cursor:pointer; font-size:.8rem; font-weight:600; color:var(--primary); text-decoration:underline; text-underline-offset:2px; }
+
+  .sr-only { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
+
+  .tab-bar { display:flex; gap:.25rem; border-bottom:1px solid var(--border); margin-bottom:1.75rem; overflow-x:auto; }
+  .tab-btn { padding:.7rem 1rem; font-size:.875rem; font-weight:600; color:var(--muted-foreground); border:none; background:none; cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-1px; white-space:nowrap; transition:.15s; }
+  .tab-btn:hover { color:var(--foreground); }
+  .tab-btn.active { color:var(--primary); border-color:var(--primary); }
+
+  .list-row { display:flex; align-items:center; gap:.85rem; padding:.9rem 1.1rem; border:1px solid var(--border); border-radius:.9rem; background:var(--card); text-decoration:none; color:inherit; transition:.15s; }
+  .list-row:hover { border-color:var(--tint-20); background:var(--secondary); }
+
+  .status-badge { display:inline-flex; align-items:center; padding:.25rem .65rem; border-radius:999px; font-size:.7rem; font-weight:600; white-space:nowrap; flex-shrink:0; }
+  .status-pending { background:oklch(93% .08 85); color:oklch(45% .13 75); }
+  .status-active { background:oklch(90% .1 150); color:oklch(40% .13 150); }
+  .status-cancelled { background:var(--secondary); color:var(--muted-foreground); }
 </style>
 </head>
 <body>
@@ -113,30 +146,84 @@ function CalendarIcon({ className }) { return <svg {...iconBase} className={clas
 function SendIcon({ className }) { return <svg {...iconBase} className={className}><path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"/><path d="m21.854 2.147-10.94 10.939"/></svg>; }
 function UserIcon({ className }) { return <svg {...iconBase} className={className}><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>; }
 function CheckIcon({ className }) { return <svg {...iconBase} className={className}><path d="M20 6 9 17l-5-5"/></svg>; }
+function UserCircleIcon({ className }) { return <svg {...iconBase} className={className}><path d="M18 20a6 6 0 0 0-12 0"/><circle cx="12" cy="10" r="4"/><circle cx="12" cy="12" r="10"/></svg>; }
 
 /* ---------------- Data ---------------- */
 
 const CATEGORIES = ["Programming & Tech", "Design", "Tutoring", "Language & Writing", "Event & Creative"];
 
-const SERVICES = [
+const MOCK_USER = { name: "You", initials: "YO" };
+
+function slugify(title) {
+  const base = title.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || "post";
+  return `${base}-${Date.now().toString(36)}`;
+}
+
+const INITIAL_SERVICES = [
   { slug: "python-debugging", name: "Alex T.", initials: "AT", category: "Programming & Tech", title: "Python Debugging", description: "Stuck on a bug or failing test? I can help you debug Python code, explain errors, and get your assignment running smoothly.", price: "฿150–250", rating: 4.9, reviews: 24 },
   { slug: "figma-ui-design", name: "Mina K.", initials: "MK", category: "Design", title: "Figma UI Design", description: "Need a clean UI for your project or prototype? I design screens, components, and user flows in Figma for web and mobile apps.", price: "฿200–500", rating: 4.8, reviews: 31 },
   { slug: "english-proofreading", name: "Ploy S.", initials: "PS", category: "Language & Writing", title: "English Proofreading", description: "Polish your reports, essays, and presentations. I fix grammar, clarity, and tone while keeping your voice intact.", price: "฿100–200", rating: 5.0, reviews: 17 },
   { slug: "event-photography", name: "Mark C.", initials: "MC", category: "Event & Creative", title: "Event Photography", description: "Capture your club event, graduation shoot, or project showcase. I bring a camera, edit the best shots, and deliver them fast.", price: "฿500+", rating: 4.9, reviews: 12 },
   { slug: "excel-help", name: "Beam P.", initials: "BP", category: "Programming & Tech", title: "Excel Help", description: "From formulas and pivot tables to charts and dashboards, I can make your spreadsheet do the work for you.", price: "฿100–300", rating: 4.8, reviews: 19 },
   { slug: "calculus-tutoring", name: "Nicha R.", initials: "NR", category: "Tutoring", title: "Calculus Tutoring", description: "One-on-one sessions to help you prepare for midterms, solve problem sets, and actually understand the concepts.", price: "฿250–350", rating: 4.9, reviews: 28 },
+  { slug: "web-dev-basics", name: "Fah W.", initials: "FW", category: "Programming & Tech", title: "Web Development Basics", description: "Building a simple site for a class project or club? I'll help you get HTML, CSS, and JS working together.", price: "฿200/hr", rating: 4.7, reviews: 15 },
+  { slug: "logo-branding", name: "Ice T.", initials: "IT", category: "Design", title: "Logo & Branding Design", description: "I create simple, memorable logos and brand kits for clubs, small projects, and personal brands.", price: "฿300–600", rating: 4.9, reviews: 22 },
+  { slug: "thai-english-translation", name: "Fon P.", initials: "FP", category: "Language & Writing", title: "Thai–English Translation", description: "Fast, accurate translation for reports, captions, and short documents in both directions.", price: "฿80/page", rating: 4.8, reviews: 9 },
+  { slug: "statistics-tutoring", name: "Tar S.", initials: "TS", category: "Tutoring", title: "Statistics Tutoring", description: "I help with hypothesis testing, regression, and probability — whatever's on your syllabus.", price: "฿200–300", rating: 4.9, reviews: 14 },
+  { slug: "reel-editing", name: "Gap N.", initials: "GN", category: "Event & Creative", title: "Video Editing for Reels", description: "Quick-turnaround edits for Instagram Reels and TikTok — trims, captions, and transitions included.", price: "฿150–250", rating: 4.6, reviews: 11 },
+  { slug: "basic-guitar-lessons", name: "You", initials: "YO", category: "Event & Creative", title: "Basic Guitar Lessons", description: "Beginner-friendly guitar lessons — chords, strumming, and your first full song within a few sessions.", price: "฿150/hr", rating: 4.8, reviews: 6 },
+  { slug: "resume-review", name: "You", initials: "YO", category: "Language & Writing", title: "Resume & Cover Letter Review", description: "I'll proofread and tighten up your resume and cover letter for internship or job applications.", price: "฿100/review", rating: 4.7, reviews: 4 },
 ];
 
-const REQUESTS = [
+const INITIAL_REQUESTS = [
   { slug: "python-tonight", name: "Nut A.", initials: "NA", category: "Programming & Tech", title: "Need help debugging Python tonight", description: "My data structures assignment throws an index error I can't trace. Looking for someone to hop on a call for ~1 hour tonight and walk through it with me.", budget: "฿200", deadline: "Tonight, 9 PM" },
   { slug: "poster-design", name: "Praew J.", initials: "PJ", category: "Design", title: "Looking for someone to design a poster", description: "Our club is running an open house next week and we need one A3 poster plus an Instagram version. Simple, clean, with our logo and event details.", budget: "฿350", deadline: "Fri, this week" },
   { slug: "presentation-proofread", name: "Boss S.", initials: "BS", category: "Language & Writing", title: "Need an English presentation proofread", description: "12 slides for a business communication class. I need grammar fixes and help making the wording sound natural before I rehearse.", budget: "฿150", deadline: "Thu, 6 PM" },
   { slug: "event-photographer", name: "Fern K.", initials: "FK", category: "Event & Creative", title: "Looking for an event photographer", description: "Engineering night this Saturday, roughly 3 hours of coverage. Need edited photos delivered within a few days for our social pages.", budget: "฿600", deadline: "Sat, this week" },
   { slug: "excel-dashboard", name: "Ton P.", initials: "TP", category: "Programming & Tech", title: "Need an Excel dashboard for my project data", description: "I have survey results in a messy sheet. I want pivot tables and a couple of charts I can drop into my report.", budget: "฿250", deadline: "Next Mon" },
   { slug: "calculus-cram", name: "Mild R.", initials: "MR", category: "Tutoring", title: "Looking for a calculus tutor before midterm", description: "Two sessions on integration techniques and series. I learn best by working through past exam problems together.", budget: "฿300/hr", deadline: "Sun, this week" },
+  { slug: "landing-page-help", name: "Korn A.", initials: "KA", category: "Programming & Tech", title: "Need a landing page built for a startup pitch", description: "Just need a single clean page with our logo, a short pitch, and a contact form before Friday's demo day.", budget: "฿400", deadline: "Fri, this week" },
+  { slug: "startup-logo", name: "May L.", initials: "ML", category: "Design", title: "Looking for a logo designer for our startup", description: "Small student startup, need a simple wordmark and icon we can use on socials and a deck.", budget: "฿500", deadline: "Next Wed" },
+  { slug: "report-translation", name: "Bank K.", initials: "BK", category: "Language & Writing", title: "Need Thai-English translation for a report", description: "8-page internship report, need it translated into English before submission.", budget: "฿300", deadline: "Sun, this week" },
+  { slug: "regression-help", name: "Ploy N.", initials: "PN", category: "Tutoring", title: "Need a stats tutor for regression analysis", description: "Stuck on multiple regression for my thesis data. Looking for one focused session.", budget: "฿250", deadline: "Tue, 4 PM" },
+  { slug: "highlight-reel-edit", name: "Nan T.", initials: "NT", category: "Event & Creative", title: "Need someone to edit a highlight reel video", description: "Have raw footage from our sports day, want a 2-minute highlight reel with music.", budget: "฿350", deadline: "Next Mon" },
+  { slug: "lab-partner-needed", name: "You", initials: "YO", category: "Programming & Tech", title: "Need a lab partner for Data Structures", description: "Looking for someone to pair up with for the remaining lab assignments this semester.", budget: "Open to offers", deadline: "Wed, this week" },
+  { slug: "poster-printing-help", name: "You", initials: "YO", category: "Event & Creative", title: "Need help printing and mounting a poster", description: "Have the design ready, just need help getting it printed and mounted on foam board before Friday.", budget: "฿100", deadline: "Fri, 5 PM" },
 ];
 
 /* ---------------- Router ---------------- */
+
+const MOCK_NOW = Date.now();
+
+const INITIAL_MATCHES = {
+  "service:python-debugging": { key: "service:python-debugging", type: "service", slug: "python-debugging", name: "Alex T.", title: "Python Debugging", status: "active", timestamp: MOCK_NOW - 86400000 },
+  "service:calculus-tutoring": { key: "service:calculus-tutoring", type: "service", slug: "calculus-tutoring", name: "Nicha R.", title: "Calculus Tutoring", status: "pending", timestamp: MOCK_NOW - 3600000 },
+};
+
+const INITIAL_CHATS = {
+  "service:python-debugging": {
+    key: "service:python-debugging", type: "service", slug: "python-debugging", name: "Alex T.", title: "Python Debugging",
+    messages: [
+      { from: "them", text: "Hi! I offer Python Debugging. Tell me about your task and I'll let you know how I can help.", time: MOCK_NOW - 86500000 },
+      { from: "me", text: "Hey! I've got an IndexError in my sorting function, could really use a hand tonight.", time: MOCK_NOW - 86460000 },
+      { from: "them", text: "Sure, send me the code snippet and I'll take a look.", time: MOCK_NOW - 86400000 },
+    ],
+  },
+  "request:poster-design": {
+    key: "request:poster-design", type: "request", slug: "poster-design", name: "Praew J.", title: "Looking for someone to design a poster",
+    messages: [
+      { from: "them", text: "Hi! Thanks for checking out my request — \"Looking for someone to design a poster\". Can you help?", time: MOCK_NOW - 7200000 },
+      { from: "me", text: "I can help! Do you have your club logo as a vector file?", time: MOCK_NOW - 7000000 },
+    ],
+  },
+  "service:calculus-tutoring": {
+    key: "service:calculus-tutoring", type: "service", slug: "calculus-tutoring", name: "Nicha R.", title: "Calculus Tutoring",
+    messages: [
+      { from: "them", text: "Hi! I offer Calculus Tutoring. Tell me about your task and I'll let you know how I can help.", time: MOCK_NOW - 3600000 },
+      { from: "me", text: "Hi, I need help with integration by parts before Thursday's quiz.", time: MOCK_NOW - 3500000 },
+    ],
+  },
+};
 
 function useRouter() {
   const [path, setPath] = useState(window.location.pathname || "/");
@@ -199,28 +286,37 @@ function SearchBar({ value, onChange, placeholder }) {
   );
 }
 
-function EmptyState({ text }) {
+function EmptyState({ text, onClear }) {
   return (
     <div className="flex flex-col items-center gap-3 py-20 text-center muted">
       <SearchIcon className="h-8 w-8" />
       <p>{text}</p>
+      {onClear && <button onClick={onClear} className="link-btn">Clear filters</button>}
     </div>
   );
 }
 
-function Field({ label, icon, children }) {
+function Field({ label, icon, required, error, children }) {
   return (
     <div>
-      <span className="field-label">{icon}{label}</span>
+      <span className="field-label">
+        {icon}{label}{required && <span className="field-required-mark" aria-hidden="true">*</span>}
+        {required && <span className="sr-only">(required)</span>}
+      </span>
       {children}
+      {error && <p className="field-error">{error}</p>}
     </div>
   );
 }
 
-function ChatCard({ item, opener, onMatch, matched, matchLabel }) {
-  const [messages, setMessages] = useState([{ from: "them", text: opener }]);
+function formatTime(ts) {
+  return new Date(ts).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+}
+
+function ChatCard({ item, messages, onSend, matchStatus, matchedAt, onRequestMatch, onCancelMatch, matchLabel }) {
   const [draft, setDraft] = useState("");
   const scrollRef = useRef(null);
+  const firstName = item.name.split(" ")[0];
 
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -228,11 +324,8 @@ function ChatCard({ item, opener, onMatch, matched, matchLabel }) {
 
   const send = () => {
     if (!draft.trim()) return;
-    setMessages(m => [...m, { from: "me", text: draft.trim() }]);
+    onSend(draft.trim());
     setDraft("");
-    setTimeout(() => {
-      setMessages(m => [...m, { from: "them", text: "Sounds good — let's sort out the details." }]);
-    }, 700);
   };
 
   return (
@@ -257,15 +350,39 @@ function ChatCard({ item, opener, onMatch, matched, matchLabel }) {
             <SendIcon className="h-4 w-4" />
           </button>
         </form>
+        {onRequestMatch && (
         <div className="border-t px-5 py-4" style={{ borderColor: "var(--border)" }}>
-          {matched ? (
-            <div className="btn btn-primary btn-block" style={{ opacity: .65, cursor: "default" }}>
-              <CheckIcon className="h-4 w-4" /> Matched
+          {matchStatus === "pending" ? (
+            <div className="fade-in">
+              <div className="flex items-center gap-2 text-sm font-semibold" style={{ color: "var(--primary)" }}>
+                <CheckIcon className="h-4 w-4" /> Request sent to {item.name}
+              </div>
+              <p className="mt-0.5 text-xs muted">{formatTime(matchedAt)}</p>
+              <button disabled className="btn btn-primary btn-block mt-3">Request sent — waiting for reply</button>
+              <ul className="mt-3 space-y-1.5 text-xs muted">
+                <li className="flex items-start gap-1.5"><span aria-hidden="true">•</span><span>{firstName} usually replies within an hour</span></li>
+                <li className="flex items-start gap-1.5"><span aria-hidden="true">•</span><span>You'll sort out price and scope in chat</span></li>
+                <li className="flex items-start gap-1.5"><span aria-hidden="true">•</span><span>Either of you can cancel before work starts</span></li>
+              </ul>
+              <button onClick={onCancelMatch} className="mt-3 w-full text-center text-sm font-semibold muted" style={{ background: "none", border: "none", cursor: "pointer" }}>
+                Cancel request
+              </button>
+            </div>
+          ) : matchStatus === "active" ? (
+            <div className="fade-in">
+              <div className="flex items-center gap-2 text-sm font-semibold" style={{ color: "var(--primary)" }}>
+                <CheckIcon className="h-4 w-4" /> Connected with {item.name}
+              </div>
+              <p className="mt-0.5 text-xs muted">Keep chatting above to sort out the details.</p>
+              <button onClick={onCancelMatch} className="mt-3 w-full text-center text-sm font-semibold muted" style={{ background: "none", border: "none", cursor: "pointer" }}>
+                Cancel request
+              </button>
             </div>
           ) : (
-            <button onClick={onMatch} className="btn btn-primary btn-block">{matchLabel}</button>
+            <button onClick={onRequestMatch} className="btn btn-primary btn-block">{matchLabel}</button>
           )}
         </div>
+        )}
       </div>
     </div>
   );
@@ -324,13 +441,14 @@ function RequestCard({ item, nav }) {
 
 /* ---------------- Pages ---------------- */
 
-function ServicesPage({ nav }) {
-  const [query, setQuery] = useState("");
-  const [category, setCategory] = useState("All");
-  const filtered = useMemo(() => SERVICES.filter(s =>
+function ServicesPage({ nav, services, filter, onFilterChange }) {
+  const { query, category } = filter;
+  const setQuery = (q) => onFilterChange({ ...filter, query: q });
+  const setCategory = (c) => onFilterChange({ ...filter, category: c });
+  const filtered = useMemo(() => services.filter(s =>
     (category === "All" || s.category === category) &&
     (s.title.toLowerCase().includes(query.toLowerCase()) || s.name.toLowerCase().includes(query.toLowerCase()) || s.description.toLowerCase().includes(query.toLowerCase()))
-  ), [query, category]);
+  ), [services, query, category]);
 
   return (
     <div className="fade-in mx-auto max-w-7xl px-4 pt-12 sm:px-6 lg:px-8">
@@ -351,7 +469,7 @@ function ServicesPage({ nav }) {
           <span className="text-sm muted">{filtered.length} available</span>
         </div>
         {filtered.length === 0 ? (
-          <EmptyState text="No services match your search." />
+          <EmptyState text="No services match your search." onClear={(query || category !== "All") ? () => onFilterChange({ query: "", category: "All" }) : undefined} />
         ) : (
           <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {filtered.map(s => <ServiceCard key={s.slug} item={s} nav={nav} />)}
@@ -371,13 +489,14 @@ function ServicesPage({ nav }) {
   );
 }
 
-function RequestsPage({ nav }) {
-  const [query, setQuery] = useState("");
-  const [category, setCategory] = useState("All");
-  const filtered = useMemo(() => REQUESTS.filter(r =>
+function RequestsPage({ nav, requests, filter, onFilterChange }) {
+  const { query, category } = filter;
+  const setQuery = (q) => onFilterChange({ ...filter, query: q });
+  const setCategory = (c) => onFilterChange({ ...filter, category: c });
+  const filtered = useMemo(() => requests.filter(r =>
     (category === "All" || r.category === category) &&
     (r.title.toLowerCase().includes(query.toLowerCase()) || r.name.toLowerCase().includes(query.toLowerCase()) || r.description.toLowerCase().includes(query.toLowerCase()))
-  ), [query, category]);
+  ), [requests, query, category]);
 
   return (
     <div className="fade-in mx-auto max-w-7xl px-4 pt-12 sm:px-6 lg:px-8">
@@ -398,7 +517,7 @@ function RequestsPage({ nav }) {
           <span className="text-sm muted">{filtered.length} open</span>
         </div>
         {filtered.length === 0 ? (
-          <EmptyState text="No help requests match your search." />
+          <EmptyState text="No help requests match your search." onClear={(query || category !== "All") ? () => onFilterChange({ query: "", category: "All" }) : undefined} />
         ) : (
           <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {filtered.map(r => <RequestCard key={r.slug} item={r} nav={nav} />)}
@@ -438,18 +557,36 @@ function PostPage({ nav }) {
   );
 }
 
-function PostServiceForm({ nav }) {
+function PostServiceForm({ nav, onSubmit }) {
   const [form, setForm] = useState({ title: "", category: "", description: "", price: "" });
-  const [submitted, setSubmitted] = useState(false);
-  const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
-  const submit = (e) => { e.preventDefault(); setSubmitted(true); };
+  const [touched, setTouched] = useState({});
+  const [submitted, setSubmitted] = useState(null);
+  const set = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.value }));
+  const blur = (k) => () => setTouched(t => ({ ...t, [k]: true }));
+
+  const errors = {
+    title: form.title.trim() ? "" : "Give your service a title.",
+    category: form.category ? "" : "Choose a category.",
+    description: form.description.trim() ? "" : "Add a short description.",
+  };
+  const isValid = !errors.title && !errors.category && !errors.description;
+
+  const submit = (e) => {
+    e.preventDefault();
+    setTouched({ title: true, category: true, description: true });
+    if (!isValid) return;
+    setSubmitted(onSubmit(form));
+  };
 
   if (submitted) {
     return (
       <div className="fade-in mx-auto max-w-2xl px-4 py-20 text-center sm:px-6 lg:px-8">
         <h1 className="text-2xl font-extrabold">Service posted!</h1>
-        <p className="mt-2 muted">Other students can now find "{form.title}".</p>
-        <Link to="/" nav={nav} className="btn btn-primary mt-6 inline-flex">Back to Services</Link>
+        <p className="mt-2 muted">Other students can now find "{submitted.title}".</p>
+        <div className="mt-6 flex flex-wrap justify-center gap-3">
+          <Link to={`/service/${submitted.slug}`} nav={nav} className="btn btn-primary inline-flex">View your listing</Link>
+          <Link to="/" nav={nav} className="btn btn-outline inline-flex">Back to Services</Link>
+        </div>
       </div>
     );
   }
@@ -462,42 +599,61 @@ function PostServiceForm({ nav }) {
       <div className="mt-6 rounded-2xl border p-6 shadow-sm sm:p-8" style={{ borderColor: "var(--border)", background: "var(--card)" }}>
         <h1 className="text-2xl font-bold sm:text-3xl">I can help with something</h1>
         <p className="mt-2 text-sm muted">Describe the service you offer and what you charge.</p>
+        <p className="form-legend"><span className="field-required-mark">*</span> Required</p>
 
-        <form onSubmit={submit} className="mt-6 space-y-5">
-          <Field label="Service title" icon={<MessageSquareIcon className="h-4 w-4" />}>
-            <input required value={form.title} onChange={set("title")} className="field-input" placeholder="e.g., Python Debugging" />
+        <form onSubmit={submit} noValidate className="mt-6 space-y-5">
+          <Field label="Service title" icon={<MessageSquareIcon className="h-4 w-4" />} required error={touched.title ? errors.title : ""}>
+            <input value={form.title} onChange={set("title")} onBlur={blur("title")} className={`field-input ${touched.title && errors.title ? "invalid" : ""}`} placeholder="e.g., Python Debugging" />
           </Field>
-          <Field label="Skills / category" icon={<ListIcon className="h-4 w-4" />}>
-            <select required value={form.category} onChange={set("category")} className="field-select">
+          <Field label="Skills / category" icon={<ListIcon className="h-4 w-4" />} required error={touched.category ? errors.category : ""}>
+            <select value={form.category} onChange={set("category")} onBlur={blur("category")} className={`field-select ${touched.category && errors.category ? "invalid" : ""}`}>
               <option value="" disabled>Select a category</option>
               {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
             </select>
           </Field>
-          <Field label="Description" icon={<FileTextIcon className="h-4 w-4" />}>
-            <textarea required value={form.description} onChange={set("description")} className="field-textarea" placeholder="What you help with, how you work, what students get..." />
+          <Field label="Description" icon={<FileTextIcon className="h-4 w-4" />} required error={touched.description ? errors.description : ""}>
+            <textarea value={form.description} onChange={set("description")} onBlur={blur("description")} className={`field-textarea ${touched.description && errors.description ? "invalid" : ""}`} placeholder="What you help with, how you work, what students get..." />
           </Field>
           <Field label="Price / starting price" icon={<WalletIcon className="h-4 w-4" />}>
-            <input required value={form.price} onChange={set("price")} className="field-input" placeholder="e.g., ฿150–250" />
+            <input value={form.price} onChange={set("price")} className="field-input" placeholder="e.g., ฿150–250 (leave blank if negotiable)" />
           </Field>
-          <button type="submit" className="btn btn-primary btn-block mt-2">Post Service</button>
+          <button type="submit" disabled={!isValid} className="btn btn-primary btn-block mt-2">Post Service</button>
         </form>
       </div>
     </div>
   );
 }
 
-function PostRequestForm({ nav }) {
+function PostRequestForm({ nav, onSubmit }) {
   const [form, setForm] = useState({ title: "", category: "", description: "", budget: "", deadline: "" });
-  const [submitted, setSubmitted] = useState(false);
-  const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
-  const submit = (e) => { e.preventDefault(); setSubmitted(true); };
+  const [touched, setTouched] = useState({});
+  const [submitted, setSubmitted] = useState(null);
+  const set = (k) => (e) => setForm(f => ({ ...f, [k]: e.target.value }));
+  const blur = (k) => () => setTouched(t => ({ ...t, [k]: true }));
+
+  const errors = {
+    title: form.title.trim() ? "" : "Say what you need help with.",
+    category: form.category ? "" : "Choose a category.",
+    description: form.description.trim() ? "" : "Add a short description.",
+  };
+  const isValid = !errors.title && !errors.category && !errors.description;
+
+  const submit = (e) => {
+    e.preventDefault();
+    setTouched({ title: true, category: true, description: true });
+    if (!isValid) return;
+    setSubmitted(onSubmit(form));
+  };
 
   if (submitted) {
     return (
       <div className="fade-in mx-auto max-w-2xl px-4 py-20 text-center sm:px-6 lg:px-8">
         <h1 className="text-2xl font-extrabold">Request posted!</h1>
-        <p className="mt-2 muted">SIIT students can now see "{form.title}".</p>
-        <Link to="/requests" nav={nav} className="btn btn-primary mt-6 inline-flex">Back to Help Requests</Link>
+        <p className="mt-2 muted">SIIT students can now see "{submitted.title}".</p>
+        <div className="mt-6 flex flex-wrap justify-center gap-3">
+          <Link to={`/requests/${submitted.slug}`} nav={nav} className="btn btn-primary inline-flex">View your request</Link>
+          <Link to="/requests" nav={nav} className="btn btn-outline inline-flex">Back to Help Requests</Link>
+        </div>
       </div>
     );
   }
@@ -510,36 +666,45 @@ function PostRequestForm({ nav }) {
       <div className="mt-6 rounded-2xl border p-6 shadow-sm sm:p-8" style={{ borderColor: "var(--border)", background: "var(--card)" }}>
         <h1 className="text-2xl font-bold sm:text-3xl">I need help with something</h1>
         <p className="mt-2 text-sm muted">Describe the task and SIIT students will see your request.</p>
+        <p className="form-legend"><span className="field-required-mark">*</span> Required</p>
 
-        <form onSubmit={submit} className="mt-6 space-y-5">
-          <Field label="What do you need help with?" icon={<MessageSquareIcon className="h-4 w-4" />}>
-            <input required value={form.title} onChange={set("title")} className="field-input" placeholder="e.g., Need help debugging Python tonight" />
+        <form onSubmit={submit} noValidate className="mt-6 space-y-5">
+          <Field label="What do you need help with?" icon={<MessageSquareIcon className="h-4 w-4" />} required error={touched.title ? errors.title : ""}>
+            <input value={form.title} onChange={set("title")} onBlur={blur("title")} className={`field-input ${touched.title && errors.title ? "invalid" : ""}`} placeholder="e.g., Need help debugging Python tonight" />
           </Field>
-          <Field label="Category" icon={<ListIcon className="h-4 w-4" />}>
-            <select required value={form.category} onChange={set("category")} className="field-select">
+          <Field label="Category" icon={<ListIcon className="h-4 w-4" />} required error={touched.category ? errors.category : ""}>
+            <select value={form.category} onChange={set("category")} onBlur={blur("category")} className={`field-select ${touched.category && errors.category ? "invalid" : ""}`}>
               <option value="" disabled>Select a category</option>
               {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
             </select>
           </Field>
-          <Field label="Description" icon={<FileTextIcon className="h-4 w-4" />}>
-            <textarea required value={form.description} onChange={set("description")} className="field-textarea" placeholder="Explain the task and anything the helper should know..." />
+          <Field label="Description" icon={<FileTextIcon className="h-4 w-4" />} required error={touched.description ? errors.description : ""}>
+            <textarea value={form.description} onChange={set("description")} onBlur={blur("description")} className={`field-textarea ${touched.description && errors.description ? "invalid" : ""}`} placeholder="Explain the task and anything the helper should know..." />
           </Field>
           <Field label="Budget" icon={<WalletIcon className="h-4 w-4" />}>
-            <input required value={form.budget} onChange={set("budget")} className="field-input" placeholder="e.g., ฿200" />
+            <input value={form.budget} onChange={set("budget")} className="field-input" placeholder="e.g., ฿200 (leave blank if open to offers)" />
           </Field>
           <Field label="Deadline" icon={<CalendarIcon className="h-4 w-4" />}>
-            <input required value={form.deadline} onChange={set("deadline")} className="field-input" placeholder="e.g., Tonight, 9 PM" />
+            <input type="date" min={new Date().toISOString().slice(0, 10)} value={form.deadline} onChange={set("deadline")} className="field-input" />
           </Field>
-          <button type="submit" className="btn btn-primary btn-block mt-2">Post Request</button>
+          <button type="submit" disabled={!isValid} className="btn btn-primary btn-block mt-2">Post Request</button>
         </form>
       </div>
     </div>
   );
 }
 
-function ServiceDetail({ slug, nav }) {
-  const item = SERVICES.find(s => s.slug === slug);
-  const [matched, setMatched] = useState(false);
+function ServiceDetail({ slug, nav, services, matches, chats, onRequestMatch, onCancelMatch, onEnsureChat, onSendMessage }) {
+  const item = services.find(s => s.slug === slug);
+  const key = `service:${slug}`;
+  const match = matches[key];
+  const chat = chats[key];
+  const isOwn = item && item.name === MOCK_USER.name;
+  const opener = item ? `Hi! I offer ${item.title}. Tell me about your task and I'll let you know how I can help.` : "";
+
+  useEffect(() => {
+    if (item) onEnsureChat("service", item, opener);
+  }, [item && item.slug]);
 
   if (!item) {
     return (
@@ -591,20 +756,37 @@ function ServiceDetail({ slug, nav }) {
         </div>
       </div>
 
-      <ChatCard
-        item={item}
-        opener={`Hi! I offer ${item.title}. Tell me about your task and I'll let you know how I can help.`}
-        onMatch={() => setMatched(true)}
-        matched={matched}
-        matchLabel="Match with this student"
-      />
+      {isOwn ? (
+        <div className="own-post-notice mt-8">
+          <UserCircleIcon className="h-5 w-5 shrink-0" style={{ color: "var(--primary)" }} />
+          This is your listing. Head to your <Link to="/profile" nav={nav} className="link-btn">Profile</Link> to manage it.
+        </div>
+      ) : (
+        <ChatCard
+          item={item}
+          messages={chat ? chat.messages : [{ from: "them", text: opener }]}
+          onSend={(text) => onSendMessage("service", item, text)}
+          matchStatus={match && match.status}
+          matchedAt={match && match.timestamp}
+          onRequestMatch={() => onRequestMatch("service", item)}
+          onCancelMatch={() => onCancelMatch("service", item)}
+          matchLabel="Match with this student"
+        />
+      )}
     </div>
   );
 }
 
-function RequestDetail({ slug, nav }) {
-  const item = REQUESTS.find(r => r.slug === slug);
-  const [matched, setMatched] = useState(false);
+function RequestDetail({ slug, nav, requests, chats, onEnsureChat, onSendMessage }) {
+  const item = requests.find(r => r.slug === slug);
+  const key = `request:${slug}`;
+  const chat = chats[key];
+  const isOwn = item && item.name === MOCK_USER.name;
+  const opener = item ? `Hi! Thanks for checking out my request — "${item.title}". Can you help?` : "";
+
+  useEffect(() => {
+    if (item) onEnsureChat("request", item, opener);
+  }, [item && item.slug]);
 
   if (!item) {
     return (
@@ -648,13 +830,114 @@ function RequestDetail({ slug, nav }) {
         </div>
       </div>
 
-      <ChatCard
-        item={item}
-        opener={`Hi! Thanks for checking out my request — "${item.title}". Can you help?`}
-        onMatch={() => setMatched(true)}
-        matched={matched}
-        matchLabel="Offer to Help"
-      />
+      {isOwn ? (
+        <div className="own-post-notice mt-8">
+          <UserCircleIcon className="h-5 w-5 shrink-0" style={{ color: "var(--primary)" }} />
+          This is your request. Head to your <Link to="/profile" nav={nav} className="link-btn">Profile</Link> to see who's offering to help.
+        </div>
+      ) : (
+        <ChatCard
+          item={item}
+          messages={chat ? chat.messages : [{ from: "them", text: opener }]}
+          onSend={(text) => onSendMessage("request", item, text)}
+        />
+      )}
+    </div>
+  );
+}
+
+function ProfilePage({ nav, services, requests, matches, chats }) {
+  const [tab, setTab] = useState("posts");
+
+  const myServices = services.filter(s => s.name === MOCK_USER.name);
+  const myRequests = requests.filter(r => r.name === MOCK_USER.name);
+  const matchList = Object.values(matches).sort((a, b) => b.timestamp - a.timestamp);
+  const chatList = Object.values(chats)
+    .filter(c => c.messages.length > 0)
+    .map(c => ({ ...c, last: c.messages[c.messages.length - 1] }))
+    .sort((a, b) => (b.last ? b.last.time : 0) - (a.last ? a.last.time : 0));
+
+  const detailPath = (row) => row.type === "service" ? `/service/${row.slug}` : `/requests/${row.slug}`;
+  const rowInitials = (name) => name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
+
+  return (
+    <div className="fade-in mx-auto max-w-4xl px-4 py-10 sm:px-6 lg:px-8">
+      <div className="flex items-center gap-4">
+        <Avatar initials={MOCK_USER.initials} size={56} radius="full" tone="solid" />
+        <div>
+          <h1 className="text-2xl font-bold">{MOCK_USER.name}</h1>
+          <p className="text-sm muted">Your posts, matches, and chat history</p>
+        </div>
+      </div>
+
+      <div className="tab-bar mt-8">
+        <button className={`tab-btn ${tab === "posts" ? "active" : ""}`} onClick={() => setTab("posts")}>My Posts</button>
+        <button className={`tab-btn ${tab === "matches" ? "active" : ""}`} onClick={() => setTab("matches")}>My Matches</button>
+        <button className={`tab-btn ${tab === "chats" ? "active" : ""}`} onClick={() => setTab("chats")}>My Chats</button>
+      </div>
+
+      {tab === "posts" && (
+        <div className="space-y-10">
+          <div>
+            <h2 className="mb-4 text-lg font-semibold">Services you offer</h2>
+            {myServices.length === 0 ? (
+              <EmptyState text="You haven't posted a service yet." />
+            ) : (
+              <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                {myServices.map(s => <ServiceCard key={s.slug} item={s} nav={nav} />)}
+              </div>
+            )}
+          </div>
+          <div>
+            <h2 className="mb-4 text-lg font-semibold">Help requests you posted</h2>
+            {myRequests.length === 0 ? (
+              <EmptyState text="You haven't posted a help request yet." />
+            ) : (
+              <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                {myRequests.map(r => <RequestCard key={r.slug} item={r} nav={nav} />)}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {tab === "matches" && (
+        matchList.length === 0 ? (
+          <EmptyState text="No matches yet — request a service to get started." />
+        ) : (
+          <div className="space-y-3">
+            {matchList.map(m => (
+              <Link key={m.key} to={detailPath(m)} nav={nav} className="list-row">
+                <Avatar initials={rowInitials(m.name)} size={40} radius="full" tone="tint" />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-semibold">{m.title}</p>
+                  <p className="text-xs muted">Matched with {m.name} · {formatTime(m.timestamp)}</p>
+                </div>
+                <span className={`status-badge status-${m.status}`}>{m.status.charAt(0).toUpperCase() + m.status.slice(1)}</span>
+              </Link>
+            ))}
+          </div>
+        )
+      )}
+
+      {tab === "chats" && (
+        chatList.length === 0 ? (
+          <EmptyState text="No conversations yet." />
+        ) : (
+          <div className="space-y-3">
+            {chatList.map(c => (
+              <Link key={c.key} to={detailPath(c)} nav={nav} className="list-row">
+                <Avatar initials={rowInitials(c.name)} size={40} radius="full" tone="tint" />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-semibold">{c.name}</p>
+                  <p className="truncate text-xs muted">{c.last ? (c.last.from === "me" ? "You: " : "") + c.last.text : "No messages yet"}</p>
+                </div>
+                <span className="shrink-0 text-xs muted">{c.last ? formatTime(c.last.time) : ""}</span>
+              </Link>
+            ))}
+          </div>
+        )
+      )}
     </div>
   );
 }
@@ -673,10 +956,11 @@ function NotFound({ nav }) {
 function Header({ path, nav }) {
   const servicesActive = path === "/" || path.startsWith("/service/");
   const requestsActive = path === "/requests" || path.startsWith("/requests/");
+  const profileActive = path === "/profile";
   return (
     <header className="sticky top-0 z-40 w-full border-b" style={{ borderColor: "var(--border)", background: "color-mix(in oklch, var(--background) 80%, transparent)", backdropFilter: "blur(8px)" }}>
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
-        <Link to="/" nav={nav} className="flex items-center gap-2.5">
+        <Link to="/" nav={nav} className="flex items-center gap-2.5" style={{ flexShrink: 0 }}>
           <div className="flex h-9 w-9 items-center justify-center rounded-lg" style={{ background: "var(--primary)", color: "var(--primary-foreground)" }}>
             <HandHelpingIcon className="h-5 w-5" />
           </div>
@@ -685,9 +969,13 @@ function Header({ path, nav }) {
             <span className="text-[10px] font-semibold uppercase leading-none tracking-widest" style={{ color: "var(--primary)" }}>SIIT</span>
           </div>
         </Link>
-        <nav className="flex items-center gap-1">
+        <nav className="header-nav">
           <Link to="/" nav={nav} className={`nav-link ${servicesActive ? "active" : ""}`}>Services</Link>
           <Link to="/requests" nav={nav} className={`nav-link ${requestsActive ? "active" : ""}`}>Help Requests</Link>
+          <Link to="/profile" nav={nav} className="profile-nav-link" title="Profile">
+            <Avatar initials={MOCK_USER.initials} size={30} radius="full" tone={profileActive ? "solid" : "tint"} />
+            <span className="sr-only">Profile</span>
+          </Link>
           <Link to="/post" nav={nav} className="nav-post"><PlusIcon className="h-4 w-4" /> Post</Link>
         </nav>
       </div>
@@ -698,14 +986,56 @@ function Header({ path, nav }) {
 function App() {
   const [path, nav] = useRouter();
 
+  const [services, setServices] = useState(INITIAL_SERVICES);
+  const [requests, setRequests] = useState(INITIAL_REQUESTS);
+  const [servicesFilter, setServicesFilter] = useState({ query: "", category: "All" });
+  const [requestsFilter, setRequestsFilter] = useState({ query: "", category: "All" });
+  const [matches, setMatches] = useState(INITIAL_MATCHES); // key `${type}:${slug}` -> { key, type, slug, name, title, status, timestamp }
+  const [chats, setChats] = useState(INITIAL_CHATS); // key -> { key, type, slug, name, title, messages: [{from, text, time}] }
+
+  const addService = (form) => {
+    const item = { slug: slugify(form.title), name: MOCK_USER.name, initials: MOCK_USER.initials, category: form.category, title: form.title.trim(), description: form.description.trim(), price: form.price.trim() || "Contact for price", rating: 5.0, reviews: 0 };
+    setServices(s => [item, ...s]);
+    return item;
+  };
+  const addRequest = (form) => {
+    const deadline = form.deadline ? new Date(`${form.deadline}T00:00:00`).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" }) : "Flexible";
+    const item = { slug: slugify(form.title), name: MOCK_USER.name, initials: MOCK_USER.initials, category: form.category, title: form.title.trim(), description: form.description.trim(), budget: form.budget.trim() || "Open to offers", deadline };
+    setRequests(r => [item, ...r]);
+    return item;
+  };
+
+  const requestMatch = (type, item) => {
+    const key = `${type}:${item.slug}`;
+    setMatches(m => ({ ...m, [key]: { key, type, slug: item.slug, name: item.name, title: item.title, status: "pending", timestamp: Date.now() } }));
+  };
+  const cancelMatch = (type, item) => {
+    const key = `${type}:${item.slug}`;
+    setMatches(m => ({ ...m, [key]: { ...m[key], status: "cancelled" } }));
+  };
+
+  const ensureChat = (type, item, opener) => {
+    const key = `${type}:${item.slug}`;
+    setChats(c => c[key] ? c : { ...c, [key]: { key, type, slug: item.slug, name: item.name, title: item.title, messages: [{ from: "them", text: opener, time: Date.now() }] } });
+  };
+  const sendMessage = (type, item, text) => {
+    const key = `${type}:${item.slug}`;
+    setChats(c => ({ ...c, [key]: { ...c[key], messages: [...c[key].messages, { from: "me", text, time: Date.now() }] } }));
+    setTimeout(() => {
+      setChats(c => c[key] ? { ...c, [key]: { ...c[key], messages: [...c[key].messages, { from: "them", text: "Sounds good — let's sort out the details.", time: Date.now() }] } } : c);
+      setMatches(m => (m[key] && m[key].status === "pending") ? { ...m, [key]: { ...m[key], status: "active" } } : m);
+    }, 700);
+  };
+
   let page;
-  if (path === "/") page = <ServicesPage nav={nav} />;
-  else if (path === "/requests") page = <RequestsPage nav={nav} />;
-  else if (path.startsWith("/requests/")) page = <RequestDetail slug={path.replace("/requests/", "")} nav={nav} />;
+  if (path === "/") page = <ServicesPage nav={nav} services={services} filter={servicesFilter} onFilterChange={setServicesFilter} />;
+  else if (path === "/requests") page = <RequestsPage nav={nav} requests={requests} filter={requestsFilter} onFilterChange={setRequestsFilter} />;
+  else if (path.startsWith("/requests/")) page = <RequestDetail slug={path.replace("/requests/", "")} nav={nav} requests={requests} chats={chats} onEnsureChat={ensureChat} onSendMessage={sendMessage} />;
   else if (path === "/post") page = <PostPage nav={nav} />;
-  else if (path === "/post/service") page = <PostServiceForm nav={nav} />;
-  else if (path === "/post/request") page = <PostRequestForm nav={nav} />;
-  else if (path.startsWith("/service/")) page = <ServiceDetail slug={path.replace("/service/", "")} nav={nav} />;
+  else if (path === "/post/service") page = <PostServiceForm nav={nav} onSubmit={addService} />;
+  else if (path === "/post/request") page = <PostRequestForm nav={nav} onSubmit={addRequest} />;
+  else if (path === "/profile") page = <ProfilePage nav={nav} services={services} requests={requests} matches={matches} chats={chats} />;
+  else if (path.startsWith("/service/")) page = <ServiceDetail slug={path.replace("/service/", "")} nav={nav} services={services} matches={matches} chats={chats} onRequestMatch={requestMatch} onCancelMatch={cancelMatch} onEnsureChat={ensureChat} onSendMessage={sendMessage} />;
   else page = <NotFound nav={nav} />;
 
   return (
